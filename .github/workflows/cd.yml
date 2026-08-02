@@ -104,7 +104,34 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/${FRONTEND_IMAGE}:latest
 
       ##########################################################################
-      # Deploy to EC2
+      # SSH Connectivity Pre-check (diagnostics)
+      ##########################################################################
+
+      - name: Verify SSH connectivity to EC2
+        if: always()
+        run: |
+          echo "Writing SSH key to /tmp/deploy_key"
+          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
+          echo "Testing TCP connectivity to ${EC2_HOST}:22 (timeout 10s)"
+          # quick SSH connectivity test; will fail fast with clear message
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i /tmp/deploy_key "${EC2_USERNAME}@${EC2_HOST}" 'echo SSH_OK' || (
+            echo "";
+            echo "ERROR: SSH connection failed. Check the following:";
+            echo " - secrets.EC2_HOST is correct and has a public IP/DNS";
+            echo " - secrets.EC2_SSH_KEY contains the private key PEM with exact newlines";
+            echo " - secrets.EC2_USERNAME is correct (ec2-user / ubuntu / centos / admin)";
+            echo " - The instance security group allows inbound TCP/22 from GitHub Actions runners";
+            echo " - The instance is running and reachable from the internet (or use SSM if it's in a private subnet)";
+            exit 1
+          )
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+
+      ##########################################################################
+      # Deploy to EC2 (via SSH)
       ##########################################################################
 
       - name: Deploy to EC2
@@ -113,13 +140,11 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          timeout: 30
           script: |
-            aws ecr get-login-password \
-              --region ${{ secrets.AWS_REGION }} | \
-            docker login \
-              --username AWS \
-              --password-stdin \
-              ${{ steps.login-ecr.outputs.registry }}
+            set -e
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
 
             cd ~/agentflow
 
@@ -128,3 +153,32 @@ jobs:
             docker compose up -d --remove-orphans
 
             docker image prune -af
+
+      ##########################################################################
+      # Alternative: Deploy via AWS SSM (uncomment and use if preferred)
+      # This avoids exposing SSH to the public internet. Requires the instance
+      # to have the SSM agent and an instance profile with AmazonSSMManagedInstanceCore.
+      ##########################################################################
+
+      # - name: Deploy via SSM
+      #   if: false
+      #   run: |
+      #     INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=agentflow" "Name=instance-state-name,Values=running" --query "Reservations[0].Instances[0].InstanceId" --output text)
+      #     if [ -z "$INSTANCE_ID" ] || [ "$INSTANCE_ID" == "None" ]; then
+      #       echo "Instance not found"; exit 1
+      #     fi
+      #     aws ssm send-command \
+      #       --instance-ids "$INSTANCE_ID" \
+      #       --document-name "AWS-RunShellScript" \
+      #       --comment "Deploy from GitHub Actions" \
+      #       --parameters commands='[
+      #         "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${STEP_REGISTRY}",
+      #         "cd ~/agentflow || exit 1",
+      #         "docker compose pull",
+      #         "docker compose up -d --remove-orphans",
+      #         "docker image prune -af"
+      #       ]' \
+      #       --timeout-seconds 600 \
+      #       --query "Command.CommandId" --output text > /tmp/ssm_cmd_id
+      #     COMMAND_ID=$(cat /tmp/ssm_cmd_id)
+      #     aws ssm list-command-invocations --command-id "$COMMAND_ID" --details --query "CommandInvocations[0].Status" --output text
