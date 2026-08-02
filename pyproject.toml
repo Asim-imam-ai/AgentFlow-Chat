@@ -22,3 +22,8 @@ dependencies = [
     "langchain-text-splitters>=0.2.0",
     "pypdf>=4.2.0",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.1",
+]
