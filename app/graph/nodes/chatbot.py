@@ -1,11 +1,13 @@
-from app.graph.state import AgentState
-from app.core.settings import settings
-from app.core.prompts import CHATBOT_SYSTEM_PROMPT
-from app.llms.gemini import get_gemini_llm
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage
-from app.tools.registry import tool_registry
 import logging
+
+from langchain_core.messages import SystemMessage
+from langchain_openai import ChatOpenAI
+
+from app.core.prompts import CHATBOT_SYSTEM_PROMPT
+from app.core.settings import settings
+from app.graph.state import AgentState
+from app.llms.gemini import get_gemini_llm
+from app.tools.registry import tool_registry
 
 logger = logging.getLogger("agentflow.graph.nodes.chatbot")
 
@@ -24,7 +26,11 @@ def chatbot_node(state: AgentState) -> dict:
     # 1. Determine provider & model
     provider = state.get("provider") or settings.DEFAULT_LLM_PROVIDER
     model_name = state.get("model_name")
-    temp = state.get("temperature") if state.get("temperature") is not None else settings.TEMPERATURE
+    temp = (
+        state.get("temperature")
+        if state.get("temperature") is not None
+        else settings.TEMPERATURE
+    )
 
     # 2. Get LLM instance
     if provider == "gemini":
@@ -33,9 +39,7 @@ def chatbot_node(state: AgentState) -> dict:
     else:
         model_name = model_name or settings.OPENAI_MODEL
         llm = ChatOpenAI(
-            model=model_name,
-            temperature=temp,
-            api_key=settings.OPENAI_API_KEY
+            model=model_name, temperature=temp, api_key=settings.OPENAI_API_KEY
         )
 
     # 3. Bind tools
@@ -58,7 +62,9 @@ def chatbot_node(state: AgentState) -> dict:
             f"[CHATBOT NODE] Injecting RAG context ({len(rag_ctx)} chars) into system prompt."
         )
     else:
-        logger.info("[CHATBOT NODE] No RAG context available — answering from model knowledge.")
+        logger.info(
+            "[CHATBOT NODE] No RAG context available — answering from model knowledge."
+        )
 
     system_message = SystemMessage(content=system_prompt)
 

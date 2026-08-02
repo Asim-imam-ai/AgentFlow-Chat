@@ -1,10 +1,12 @@
-from app.graph.builder import build_agent_graph
 import logging
+
+from app.graph.builder import build_agent_graph
 
 logger = logging.getLogger("agentflow.graph.factory")
 
 # Global singleton for compiled graph
 _compiled_graph = None
+
 
 def get_graph():
     """
@@ -14,6 +16,7 @@ def get_graph():
     if _compiled_graph is None:
         _compiled_graph = build_agent_graph()
     return _compiled_graph
+
 
 def create_graph():
     """

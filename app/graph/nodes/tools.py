@@ -1,5 +1,7 @@
 from langgraph.prebuilt import ToolNode
+
 from app.tools.registry import tool_registry
+
 
 def get_tools_node() -> ToolNode:
     """

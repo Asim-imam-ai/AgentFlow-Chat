@@ -1,9 +1,12 @@
-import streamlit as st
-from typing import Dict, List, Optional, Any
-from frontend.services.api import AgentFlowAPI
 import logging
+from typing import Any
+
+import streamlit as st
+
+from frontend.services.api import AgentFlowAPI
 
 logger = logging.getLogger("agentflow.frontend.state")
+
 
 def init_session_state() -> None:
     """
@@ -30,7 +33,8 @@ def init_session_state() -> None:
     if "pending_input" not in st.session_state:
         st.session_state.pending_input = None
 
-def load_conversations(force_refresh: bool = False) -> List[Dict[str, Any]]:
+
+def load_conversations(force_refresh: bool = False) -> list[dict[str, Any]]:
     """
     Load the conversation list from the backend (or session state cache if available).
     """
@@ -42,6 +46,7 @@ def load_conversations(force_refresh: bool = False) -> List[Dict[str, Any]]:
             logger.error(f"Error loading conversations: {e}")
             st.session_state.conversation_list = []
     return st.session_state.conversation_list
+
 
 def set_active_conversation(conversation_id: str) -> None:
     """
@@ -68,11 +73,11 @@ def set_active_conversation(conversation_id: str) -> None:
             summary = data.get("summary")
             st.session_state.messages = messages
             st.session_state.summary = summary
-            
+
             # Cache it
             st.session_state.history_cache[conversation_id] = {
                 "messages": messages,
-                "summary": summary
+                "summary": summary,
             }
             logger.info(f"Fetched and cached conversation {conversation_id} history.")
         except Exception as e:
@@ -80,6 +85,7 @@ def set_active_conversation(conversation_id: str) -> None:
             st.session_state.summary = None
             logger.error(f"Error loading thread history: {e}")
             raise RuntimeError(f"Error loading thread history: {e}")
+
 
 def create_new_session() -> str:
     """
@@ -93,24 +99,21 @@ def create_new_session() -> str:
             st.session_state.messages = []
             st.session_state.summary = None
             st.session_state.uploaded_files = []
-            
+
             # Initialize empty history cache
-            st.session_state.history_cache[new_id] = {
-                "messages": [],
-                "summary": None
-            }
-            
+            st.session_state.history_cache[new_id] = {"messages": [], "summary": None}
+
             # Update conversation list cache instantly
             new_conv = {
                 "conversation_id": new_id,
                 "message_count": 0,
-                "summary": "New Chat"
+                "summary": "New Chat",
             }
             if st.session_state.conversation_list is None:
                 st.session_state.conversation_list = [new_conv]
             else:
                 st.session_state.conversation_list.insert(0, new_conv)
-                
+
             return new_id
         else:
             raise RuntimeError("Backend did not return thread_id.")
@@ -118,24 +121,26 @@ def create_new_session() -> str:
         logger.error(f"Could not generate a new thread: {e}")
         raise RuntimeError(f"Could not generate a new thread: {e}")
 
+
 def delete_session(conversation_id: str) -> None:
     """
     Deletes a conversation session, removes it from cache, and resets active state if deleted.
     """
     try:
         AgentFlowAPI.delete_thread(conversation_id)
-        
+
         # Remove from local list cache
         if st.session_state.conversation_list:
             st.session_state.conversation_list = [
-                c for c in st.session_state.conversation_list 
+                c
+                for c in st.session_state.conversation_list
                 if c["conversation_id"] != conversation_id
             ]
-            
+
         # Remove from history cache
         if conversation_id in st.session_state.history_cache:
             del st.session_state.history_cache[conversation_id]
-            
+
         # Reset current thread if it was the one deleted
         if st.session_state.current_thread == conversation_id:
             st.session_state.current_thread = None
@@ -147,24 +152,25 @@ def delete_session(conversation_id: str) -> None:
         logger.error(f"Failed to delete thread: {e}")
         raise RuntimeError(f"Failed to clear thread: {e}")
 
+
 def rename_session(conversation_id: str, summary: str) -> None:
     """
     Renames a conversation thread, updating both the backend and local state caches.
     """
     try:
         AgentFlowAPI.rename_thread(conversation_id, summary)
-        
+
         # Update list cache
         if st.session_state.conversation_list:
             for c in st.session_state.conversation_list:
                 if c["conversation_id"] == conversation_id:
                     c["summary"] = summary
                     break
-        
+
         # Update history cache summary
         if conversation_id in st.session_state.history_cache:
             st.session_state.history_cache[conversation_id]["summary"] = summary
-            
+
         # Update current summary if active
         if st.session_state.current_thread == conversation_id:
             st.session_state.summary = summary

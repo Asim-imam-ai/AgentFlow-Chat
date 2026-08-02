@@ -1,11 +1,12 @@
-from typing import TypedDict, Annotated, List, Optional
-from langgraph.graph.message import add_messages
+from typing import Annotated, TypedDict
+
 from langchain_core.messages import BaseMessage
+from langgraph.graph.message import add_messages
 
 
 class AgentState(TypedDict):
     # The messages list will append new messages automatically
-    messages: Annotated[List[BaseMessage], add_messages]
+    messages: Annotated[list[BaseMessage], add_messages]
 
     # Conversation summary (rolling, updated by summarizer node)
     summary: str
@@ -17,10 +18,10 @@ class AgentState(TypedDict):
     rag_context: str
 
     # The active conversation/thread ID — needed by the RAG node to scope retrieval
-    conversation_id: Optional[str]
+    conversation_id: str | None
 
     # Optional planner fields
-    planner_steps: List[str]
+    planner_steps: list[str]
     current_step_index: int
 
     # Provider / model overrides passed in from the API layer

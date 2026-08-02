@@ -1,7 +1,10 @@
-import streamlit as st
 import time
+
+import streamlit as st
+
 from frontend.services.api import AgentFlowAPI
 from frontend.utils import show_error
+
 
 def render_uploader() -> None:
     """
@@ -14,9 +17,9 @@ def render_uploader() -> None:
             "Select TXT, MD, CSV, or PDF",
             type=["txt", "md", "csv", "pdf"],
             key="chat_file_uploader",
-            label_visibility="visible"
+            label_visibility="visible",
         )
-        
+
         if uploaded_file is not None:
             file_key = f"uploaded_{uploaded_file.name}_{uploaded_file.size}"
             if file_key not in st.session_state:
@@ -25,7 +28,7 @@ def render_uploader() -> None:
                 for percent in range(1, 101, 20):
                     time.sleep(0.05)
                     progress_bar.progress(percent, text=f"Uploading... {percent}%")
-                
+
                 try:
                     file_bytes = uploaded_file.read()
                     conversation_id = st.session_state.get("current_thread")
@@ -36,12 +39,14 @@ def render_uploader() -> None:
                     )
                     progress_bar.progress(100, text="Upload successful!")
                     st.session_state[file_key] = True
-                    
+
                     if uploaded_file.name not in st.session_state.uploaded_files:
                         st.session_state.uploaded_files.append(uploaded_file.name)
                         chunks = res.get("chunks", "?")
-                        st.toast(f"✅ Indexed {uploaded_file.name} ({chunks} chunks) into this conversation!")
-                        
+                        st.toast(
+                            f"✅ Indexed {uploaded_file.name} ({chunks} chunks) into this conversation!"
+                        )
+
                     time.sleep(0.5)
                     st.rerun()
                 except Exception as e:
@@ -60,6 +65,11 @@ def render_attachment_chips() -> None:
         for idx, filename in enumerate(list(st.session_state.uploaded_files)):
             with cols[idx]:
                 st.info(f"📄 {filename}")
-                if st.button("✕ Remove", key=f"del_file_{filename}", help="Remove attachment", use_container_width=True):
+                if st.button(
+                    "✕ Remove",
+                    key=f"del_file_{filename}",
+                    help="Remove attachment",
+                    use_container_width=True,
+                ):
                     st.session_state.uploaded_files.remove(filename)
                     st.rerun()

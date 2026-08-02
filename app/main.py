@@ -5,6 +5,7 @@ This module creates and configures the FastAPI application.
 It exposes ONLY the REST API — no HTML templates, no static files.
 The Streamlit frontend is a separate service (see docker/Dockerfile.frontend).
 """
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 

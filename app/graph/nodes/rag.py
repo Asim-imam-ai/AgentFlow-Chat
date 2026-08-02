@@ -1,6 +1,7 @@
+import logging
+
 from app.graph.state import AgentState
 from app.services.rag_service import rag_service_wrapper
-import logging
 
 logger = logging.getLogger("agentflow.graph.nodes.rag")
 

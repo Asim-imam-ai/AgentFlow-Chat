@@ -17,7 +17,6 @@
 #     main()
 
 
-
 """
 Local development entry point.
 
@@ -48,12 +47,7 @@ def configure_environment() -> None:
     project_root = Path(__file__).resolve().parent
 
     # Windows virtual environment
-    windows_site_packages = (
-        project_root
-        / ".venv"
-        / "Lib"
-        / "site-packages"
-    )
+    windows_site_packages = project_root / ".venv" / "Lib" / "site-packages"
 
     # Linux/macOS virtual environment
     linux_site_packages = (

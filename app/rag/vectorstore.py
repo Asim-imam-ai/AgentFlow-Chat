@@ -1,10 +1,11 @@
-from langchain_core.vectorstores import InMemoryVectorStore
-from langchain_core.documents import Document
-from app.rag.embeddings import get_embeddings
+import logging
 import os
 import pickle
-import logging
-from typing import List, Optional
+
+from langchain_core.documents import Document
+from langchain_core.vectorstores import InMemoryVectorStore
+
+from app.rag.embeddings import get_embeddings
 
 logger = logging.getLogger("agentflow.rag.vectorstore")
 VECTORSTORE_PATH = os.path.join("data", "vectorstore.pkl")
@@ -63,8 +64,8 @@ class PersistentVectorStore:
     # ------------------------------------------------------------------
     def add_texts(
         self,
-        texts: List[str],
-        metadatas: Optional[List[dict]] = None,
+        texts: list[str],
+        metadatas: list[dict] | None = None,
     ) -> None:
         """Embed and store texts; persist immediately."""
         docs = [
@@ -85,8 +86,8 @@ class PersistentVectorStore:
         self,
         query: str,
         k: int = 4,
-        conversation_id: Optional[str] = None,
-    ) -> List[Document]:
+        conversation_id: str | None = None,
+    ) -> list[Document]:
         """
         Search for chunks similar to *query*.
 
@@ -112,10 +113,12 @@ class PersistentVectorStore:
             return filtered[:k]
 
         results = self.vectorstore.similarity_search(query, k=k)
-        logger.info(f"Similarity search (no conv filter): returned {len(results)} results.")
+        logger.info(
+            f"Similarity search (no conv filter): returned {len(results)} results."
+        )
         return results
 
-    def get_document_count(self, conversation_id: Optional[str] = None) -> int:
+    def get_document_count(self, conversation_id: str | None = None) -> int:
         """Return total indexed chunks, optionally scoped to a conversation."""
         try:
             all_docs = self.vectorstore.similarity_search("", k=10_000)
@@ -123,7 +126,8 @@ class PersistentVectorStore:
             return 0
         if conversation_id:
             return sum(
-                1 for d in all_docs
+                1
+                for d in all_docs
                 if d.metadata.get("conversation_id") == conversation_id
             )
         return len(all_docs)

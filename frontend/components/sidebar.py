@@ -1,8 +1,10 @@
 import streamlit as st
-from frontend.state import create_new_session
+
 from frontend.components.conversation_list import render_conversation_list
 from frontend.components.settings import render_settings
+from frontend.state import create_new_session
 from frontend.utils import show_error
+
 
 def render_sidebar() -> None:
     """

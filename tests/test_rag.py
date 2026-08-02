@@ -7,16 +7,16 @@ These tests cover the full ingestion → retrieval pipeline including:
 - Per-conversation retrieval accuracy (conversation A does NOT see conversation B chunks)
 - Zero-result behaviour when no documents are indexed for a conversation
 """
-import pytest
-import os
-import tempfile
-from app.rag.splitter import TextSplitter
-from app.rag.loaders.text_loader import TextLoader
 
+import pytest
+
+from app.rag.loaders.text_loader import TextLoader
+from app.rag.splitter import TextSplitter
 
 # ---------------------------------------------------------------------------
 # Unit tests (no external API calls)
 # ---------------------------------------------------------------------------
+
 
 def test_text_splitting():
     """Standard character-based splitting respects chunk_size."""
@@ -52,9 +52,11 @@ def test_text_splitter_respects_overlap():
 # Integration tests (require GEMINI_API_KEY)
 # ---------------------------------------------------------------------------
 
+
 def requires_gemini(fn):
     """Skip decorator if GEMINI_API_KEY is not configured."""
     from app.core.settings import settings
+
     return pytest.mark.skipif(
         not settings.GEMINI_API_KEY,
         reason="GEMINI_API_KEY not set — skipping RAG integration tests",
@@ -67,11 +69,12 @@ def test_ingest_and_retrieve_scoped_by_conversation(tmp_path):
     Documents uploaded for conversation A must NOT appear in conversation B results,
     and documents uploaded for conversation B must NOT appear in conversation A results.
     """
+    from langchain_core.vectorstores import InMemoryVectorStore
+
+    from app.rag.embeddings import get_embeddings
     from app.rag.ingestion import IngestionManager
     from app.rag.retrieval import DocumentRetriever
-    from langchain_core.vectorstores import InMemoryVectorStore
     from app.rag.vectorstore import PersistentVectorStore
-    from app.rag.embeddings import get_embeddings
 
     # Build an isolated in-memory vectorstore for this test
     embeddings = get_embeddings()
@@ -80,9 +83,9 @@ def test_ingest_and_retrieve_scoped_by_conversation(tmp_path):
     isolated_store.vectorstore = InMemoryVectorStore(embedding=embeddings)
 
     # Patch the global singleton for the duration of this test
-    import app.rag.vectorstore as vs_module
     import app.rag.ingestion as ing_module
     import app.rag.retrieval as ret_module
+    import app.rag.vectorstore as vs_module
 
     original_store = vs_module.persistent_vector_store
     vs_module.persistent_vector_store = isolated_store
@@ -119,25 +122,34 @@ def test_ingest_and_retrieve_scoped_by_conversation(tmp_path):
         assert stats_b["conversation_id"] == "conv-bbb"
 
         # Retrieve for conv-aaa — should find LangGraph content
-        results_a = retriever.retrieve("LangGraph multi-agent", conversation_id="conv-aaa")
+        results_a = retriever.retrieve(
+            "LangGraph multi-agent", conversation_id="conv-aaa"
+        )
         assert len(results_a) >= 1
-        assert any("LangGraph" in r["content"] or "AgentFlow" in r["content"] for r in results_a), \
-            f"Expected AgentFlow content in conv-aaa results: {results_a}"
+        assert any(
+            "LangGraph" in r["content"] or "AgentFlow" in r["content"]
+            for r in results_a
+        ), f"Expected AgentFlow content in conv-aaa results: {results_a}"
 
         # Retrieve for conv-bbb — should find quantum content
-        results_b = retriever.retrieve("quantum entanglement", conversation_id="conv-bbb")
+        results_b = retriever.retrieve(
+            "quantum entanglement", conversation_id="conv-bbb"
+        )
         assert len(results_b) >= 1
-        assert any("quantum" in r["content"].lower() for r in results_b), \
+        assert any("quantum" in r["content"].lower() for r in results_b), (
             f"Expected quantum content in conv-bbb results: {results_b}"
+        )
 
         # Cross-contamination check: conv-aaa query must NOT return conv-bbb's docs
         for r in results_a:
-            assert r["metadata"].get("conversation_id") == "conv-aaa", \
+            assert r["metadata"].get("conversation_id") == "conv-aaa", (
                 f"Cross-contamination: conv-bbb doc appeared in conv-aaa results: {r}"
+            )
 
         for r in results_b:
-            assert r["metadata"].get("conversation_id") == "conv-bbb", \
+            assert r["metadata"].get("conversation_id") == "conv-bbb", (
                 f"Cross-contamination: conv-aaa doc appeared in conv-bbb results: {r}"
+            )
 
     finally:
         # Restore global singleton
@@ -152,7 +164,9 @@ def test_retrieval_returns_empty_for_unknown_conversation():
     from app.rag.retrieval import DocumentRetriever
 
     retriever = DocumentRetriever(k=4)
-    results = retriever.retrieve("anything at all", conversation_id="non-existent-conv-xyz-999")
+    results = retriever.retrieve(
+        "anything at all", conversation_id="non-existent-conv-xyz-999"
+    )
     assert results == [], f"Expected empty list, got: {results}"
 
 
@@ -163,7 +177,10 @@ def test_ingestion_stats_are_complete(tmp_path):
 
     ingestion = IngestionManager()
     file_path = tmp_path / "stats_check.txt"
-    file_path.write_text("Checking that all ingestion statistics are returned correctly.", encoding="utf-8")
+    file_path.write_text(
+        "Checking that all ingestion statistics are returned correctly.",
+        encoding="utf-8",
+    )
 
     stats = ingestion.ingest_file(str(file_path), conversation_id="conv-stats-test")
     for key in ("filename", "text_length", "chunks", "embeddings", "conversation_id"):

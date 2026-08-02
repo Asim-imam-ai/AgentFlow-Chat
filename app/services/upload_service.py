@@ -1,10 +1,11 @@
-from fastapi import UploadFile, HTTPException, status
-from app.core.settings import settings
-from app.services.rag_service import rag_service_wrapper
-from typing import Optional
+import logging
 import os
 import shutil
-import logging
+
+from fastapi import HTTPException, UploadFile, status
+
+from app.core.settings import settings
+from app.services.rag_service import rag_service_wrapper
 
 logger = logging.getLogger("agentflow.services.upload_service")
 
@@ -13,7 +14,7 @@ class UploadService:
     async def process_upload(
         self,
         file: UploadFile,
-        conversation_id: Optional[str] = None,
+        conversation_id: str | None = None,
     ) -> dict:
         """
         Save the uploaded file to disk and trigger RAG ingestion.
@@ -70,7 +71,7 @@ class UploadService:
                     pass
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Upload/indexing failed: {str(e)}",
+                detail=f"Upload/indexing failed: {e!s}",
             )
 
 

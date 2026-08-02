@@ -1,11 +1,13 @@
-from datetime import datetime, timezone
-from typing import Dict, Any
+from datetime import UTC, datetime
+from typing import Any
+
 
 def get_utc_timestamp() -> str:
     """Return standard ISO UTC timestamp string"""
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
-def merge_dicts(dict1: Dict[str, Any], dict2: Dict[str, Any]) -> Dict[str, Any]:
+
+def merge_dicts(dict1: dict[str, Any], dict2: dict[str, Any]) -> dict[str, Any]:
     """Recursively merge two dictionaries"""
     result = dict1.copy()
     for key, value in dict2.items():
@@ -14,6 +16,7 @@ def merge_dicts(dict1: Dict[str, Any], dict2: Dict[str, Any]) -> Dict[str, Any]:
         else:
             result[key] = value
     return result
+
 
 def clean_whitespace(text: str) -> str:
     """Standardize spacing and strip text."""

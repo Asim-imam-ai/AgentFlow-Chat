@@ -1,13 +1,14 @@
+import logging
 import os
 import shutil
-import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agentflow.scripts.cleanup")
 
+
 def cleanup():
     logger.info("Cleaning up temporary workspace files...")
-    
+
     # 1. Delete SQLite database files inside data folder (except keep data/ folder structure)
     data_dir = "data"
     if os.path.exists(data_dir):
@@ -20,7 +21,7 @@ def cleanup():
                     logger.info(f"Removed database file: {item_path}")
                 except Exception as e:
                     logger.warning(f"Could not remove file {item_path}: {e}")
-                    
+
     # 2. Clear uploads folder
     upload_dir = "uploads"
     if os.path.exists(upload_dir):
@@ -32,7 +33,7 @@ def cleanup():
                     logger.info(f"Removed upload file: {item_path}")
                 except Exception as e:
                     logger.warning(f"Could not remove file {item_path}: {e}")
-                    
+
     # 3. Clean up root python caches
     for root, dirs, files in os.walk("."):
         if "__pycache__" in dirs:
@@ -40,8 +41,9 @@ def cleanup():
             try:
                 shutil.rmtree(pycache_path)
                 logger.info(f"Removed python cache: {pycache_path}")
-            except Exception as e:
+            except Exception:
                 pass
+
 
 if __name__ == "__main__":
     cleanup()

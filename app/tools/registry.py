@@ -1,12 +1,13 @@
-from typing import Dict, Any, List, Callable
-from langchain_core.tools import BaseTool
 import logging
+
+from langchain_core.tools import BaseTool
 
 logger = logging.getLogger("agentflow.tools.registry")
 
+
 class ToolRegistry:
     def __init__(self):
-        self._tools: Dict[str, BaseTool] = {}
+        self._tools: dict[str, BaseTool] = {}
 
     def register(self, tool: BaseTool) -> None:
         """Register a tool in the registry."""
@@ -17,12 +18,14 @@ class ToolRegistry:
         """Get a tool by name."""
         return self._tools.get(name)
 
-    def get_all_tools(self) -> List[BaseTool]:
+    def get_all_tools(self) -> list[BaseTool]:
         """Get all registered tools."""
         return list(self._tools.values())
 
+
 # Create a global instance
 tool_registry = ToolRegistry()
+
 
 def register_tool(tool: BaseTool) -> BaseTool:
     """Decorator to register tools directly."""

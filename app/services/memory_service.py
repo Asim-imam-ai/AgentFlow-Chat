@@ -1,15 +1,16 @@
 from sqlalchemy.orm import Session
+
 from app.repositories.memory_repository import MemoryRepository
-from typing import Dict, Optional
+
 
 class MemoryService:
     def __init__(self, db: Session):
         self.repo = MemoryRepository(db)
 
-    def get_fact(self, key: str) -> Optional[str]:
+    def get_fact(self, key: str) -> str | None:
         return self.repo.get_value(key)
 
-    def get_all_facts(self) -> Dict[str, str]:
+    def get_all_facts(self) -> dict[str, str]:
         return self.repo.get_all()
 
     def set_fact(self, key: str, value: str):

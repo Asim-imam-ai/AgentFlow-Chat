@@ -1,16 +1,17 @@
 from sqlalchemy.orm import Session
+
 from app.database.models import MemoryModel
-from typing import Dict, Optional
+
 
 class MemoryRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_value(self, key: str) -> Optional[str]:
+    def get_value(self, key: str) -> str | None:
         mem = self.db.query(MemoryModel).filter(MemoryModel.key == key).first()
         return mem.value if mem else None
 
-    def get_all(self) -> Dict[str, str]:
+    def get_all(self) -> dict[str, str]:
         memories = self.db.query(MemoryModel).all()
         return {mem.key: mem.value for mem in memories}
 

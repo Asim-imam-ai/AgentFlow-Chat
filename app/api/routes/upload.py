@@ -1,8 +1,9 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, status
+import logging
+
+from fastapi import APIRouter, File, Form, UploadFile
+
 from app.api.schemas.upload import UploadResponse
 from app.services.upload_service import upload_service
-import logging
-from typing import Optional
 
 logger = logging.getLogger("agentflow.routes.upload")
 router = APIRouter(tags=["Document Management"])
@@ -11,7 +12,7 @@ router = APIRouter(tags=["Document Management"])
 @router.post("/upload", response_model=UploadResponse)
 async def upload_document(
     file: UploadFile = File(...),
-    conversation_id: Optional[str] = Form(None),
+    conversation_id: str | None = Form(None),
 ):
     """
     Upload a document and immediately index it into the RAG vector store.

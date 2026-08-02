@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
+
 from app.repositories.chat_repository import ChatRepository
-from typing import List
+
 
 class ChatService:
     def __init__(self, db: Session):

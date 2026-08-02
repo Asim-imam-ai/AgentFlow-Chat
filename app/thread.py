@@ -1,5 +1,6 @@
 import uuid
-from typing import Dict, Any
+from typing import Any
+
 
 def generate_thread_id() -> str:
     """
@@ -7,12 +8,9 @@ def generate_thread_id() -> str:
     """
     return str(uuid.uuid4())
 
-def get_thread_config(thread_id: str) -> Dict[str, Any]:
+
+def get_thread_config(thread_id: str) -> dict[str, Any]:
     """
     Generate the LangGraph standard thread config.
     """
-    return {
-        "configurable": {
-            "thread_id": thread_id
-        }
-    }
+    return {"configurable": {"thread_id": thread_id}}

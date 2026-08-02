@@ -1,6 +1,7 @@
-from app.rag.vectorstore import persistent_vector_store
-from typing import List, Dict, Any, Optional
 import logging
+from typing import Any
+
+from app.rag.vectorstore import persistent_vector_store
 
 logger = logging.getLogger("agentflow.rag.retrieval")
 
@@ -12,8 +13,8 @@ class DocumentRetriever:
     def retrieve(
         self,
         query: str,
-        conversation_id: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        conversation_id: str | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Search the vectorstore and return structured match documents.
 

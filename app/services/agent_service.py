@@ -1,12 +1,15 @@
+import logging
+import uuid
+
+from langchain_core.messages import AIMessage, HumanMessage
 from sqlalchemy.orm import Session
+
 from app.graph.factory import get_graph
 from app.services.chat_service import ChatService
 from app.services.conversation_service import ConversationService
-from langchain_core.messages import HumanMessage, AIMessage
-import uuid
-import logging
 
 logger = logging.getLogger("agentflow.services.agent_service")
+
 
 class AgentService:
     def __init__(self, db: Session):
@@ -14,12 +17,12 @@ class AgentService:
         self.conversation_service = ConversationService(db)
 
     def execute_agent_turn(
-        self, 
-        message: str, 
+        self,
+        message: str,
         conversation_id: str | None = None,
         provider: str | None = None,
         model_name: str | None = None,
-        temperature: float | None = None
+        temperature: float | None = None,
     ) -> dict:
         """
         Execute one full conversation turn.
@@ -47,7 +50,6 @@ class AgentService:
         if temperature is not None:
             inputs["temperature"] = temperature
 
-
         # 3. Invoke graph
         output_state = graph.invoke(inputs, config)
 
@@ -71,12 +73,15 @@ class AgentService:
         if temperature is not None:
             kwargs["temperature"] = temperature
 
-        self.conversation_service.create_or_update_summary(active_id, summary or "", **kwargs)
+        self.conversation_service.create_or_update_summary(
+            active_id, summary or "", **kwargs
+        )
 
         return {
             "response": assistant_resp,
             "conversation_id": active_id,
-            "summary": summary if summary else None
+            "summary": summary if summary else None,
         }
+
 
 # We do not define a global instance because it needs a DB Session parameter

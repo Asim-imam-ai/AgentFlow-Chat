@@ -1,9 +1,12 @@
-import streamlit as st
 import time
+
+import streamlit as st
+
+from frontend.components.uploader import render_attachment_chips, render_uploader
 from frontend.services.api import AgentFlowAPI
 from frontend.state import create_new_session, load_conversations
-from frontend.components.uploader import render_uploader, render_attachment_chips
 from frontend.utils import show_error
+
 
 def simulate_streaming(text: str) -> None:
     """
@@ -17,6 +20,7 @@ def simulate_streaming(text: str) -> None:
         time.sleep(0.02)
     message_placeholder.markdown(full_response)
 
+
 def render_chat() -> None:
     """
     Renders the central chat area, displaying conversation history,
@@ -24,7 +28,7 @@ def render_chat() -> None:
     """
     active_id = st.session_state.current_thread
     summary = "New Chat"
-    
+
     # Resolve the active conversation summary
     if active_id:
         conversations = load_conversations()
@@ -32,7 +36,7 @@ def render_chat() -> None:
             if c["conversation_id"] == active_id:
                 summary = c.get("summary") or f"Thread {active_id[:8]}"
                 break
-        
+
         st.subheader(f"💬 {summary}")
         st.markdown("---")
     else:
@@ -75,14 +79,14 @@ def render_chat() -> None:
                         message=pending_input,
                         conversation_id=conv_id,
                         provider=provider,
-                        temperature=temp
+                        temperature=temp,
                     )
                     response_text = data.get("response", "")
-                    
+
                     if data.get("conversation_id"):
                         st.session_state.current_thread = data["conversation_id"]
                         st.session_state.selected_conversation = data["conversation_id"]
-                    
+
                     # Update local caches with summary changes
                     if data.get("summary"):
                         # Save in list cache
@@ -91,20 +95,24 @@ def render_chat() -> None:
                             if c["conversation_id"] == conv_id:
                                 c["summary"] = data["summary"]
                                 break
-                                
+
             # 3. Simulate streaming/typing
             with st.chat_message("assistant"):
                 simulate_streaming(response_text)
 
             # 4. Save response to state
-            st.session_state.messages.append({"role": "assistant", "content": response_text})
-            
+            st.session_state.messages.append(
+                {"role": "assistant", "content": response_text}
+            )
+
             # Update history cache
             if conv_id in st.session_state.history_cache:
-                st.session_state.history_cache[conv_id]["messages"] = st.session_state.messages
+                st.session_state.history_cache[conv_id]["messages"] = (
+                    st.session_state.messages
+                )
                 if data.get("summary"):
                     st.session_state.history_cache[conv_id]["summary"] = data["summary"]
-                    
+
         except Exception as e:
             show_error(f"Error communicating with backend: {e}")
         finally:
@@ -121,7 +129,7 @@ def render_chat() -> None:
     # User chat input
     generating = st.session_state.get("generating", False)
     user_input = st.chat_input("Ask AgentFlow...", disabled=generating)
-    
+
     if user_input and not generating:
         st.session_state.generating = True
         st.session_state.pending_input = user_input

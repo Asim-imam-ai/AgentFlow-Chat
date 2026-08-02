@@ -5,5 +5,5 @@ __all__ = [
     "AgentFlowException",
     "IngestionException",
     "LLMException",
-    "register_exception_handlers"
+    "register_exception_handlers",
 ]

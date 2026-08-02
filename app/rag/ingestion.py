@@ -1,10 +1,10 @@
-import os
 import logging
-from typing import Optional
-from app.rag.loaders.text_loader import TextLoader
-from app.rag.loaders.markdown_loader import MarkdownLoader
+import os
+
 from app.rag.loaders.csv_loader import CSVLoader
+from app.rag.loaders.markdown_loader import MarkdownLoader
 from app.rag.loaders.pdf_loader import PDFLoader
+from app.rag.loaders.text_loader import TextLoader
 from app.rag.splitter import TextSplitter
 from app.rag.vectorstore import persistent_vector_store
 
@@ -18,7 +18,7 @@ class IngestionManager:
     def ingest_file(
         self,
         file_path: str,
-        conversation_id: Optional[str] = None,
+        conversation_id: str | None = None,
     ) -> dict:
         """
         Load, split and embed a single document into the vector store.
@@ -67,9 +67,16 @@ class IngestionManager:
         text_length = len(content.strip())
         if text_length == 0:
             logger.warning(f"[RAG INGESTION] '{basename}' is empty — skipping.")
-            return {"filename": basename, "text_length": 0, "chunks": 0, "embeddings": 0}
+            return {
+                "filename": basename,
+                "text_length": 0,
+                "chunks": 0,
+                "embeddings": 0,
+            }
 
-        logger.info(f"[RAG INGESTION] Extracted {text_length} characters from '{basename}'.")
+        logger.info(
+            f"[RAG INGESTION] Extracted {text_length} characters from '{basename}'."
+        )
 
         # ── 3. Split into chunks ──────────────────────────────────────────
         chunks = self.splitter.split_text(content)

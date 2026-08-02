@@ -1,7 +1,9 @@
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)
+
 
 def test_health_check_endpoint():
     """Verify health endpoint returns success code and online status."""
@@ -11,12 +13,14 @@ def test_health_check_endpoint():
     assert json_data["success"] is True
     assert json_data["data"]["status"] == "online"
 
+
 def test_conversations_endpoint():
     """Verify list conversations returns a valid schema layout."""
     response = client.get("/api/conversations")
     assert response.status_code == 200
     json_data = response.json()
     assert "conversations" in json_data
+
 
 def test_thread_and_chat_lifecycle():
     """Verify the end-to-end database-backed conversation API lifecycle."""
@@ -43,9 +47,9 @@ def test_thread_and_chat_lifecycle():
         "message": "Verify SQLite persistence of this message.",
         "conversation_id": thread_id,
         "provider": "openai",
-        "temperature": 0.5
+        "temperature": 0.5,
     }
-    # We invoke it (if API key is missing or mock is not active, this might fail, but let's see. 
+    # We invoke it (if API key is missing or mock is not active, this might fail, but let's see.
     # Actually, test_agent.py ran, so OpenAI key is either set or mocked. Let's see if we can do this turn.)
     resp = client.post("/api/chat", json=chat_payload)
     assert resp.status_code == 200
