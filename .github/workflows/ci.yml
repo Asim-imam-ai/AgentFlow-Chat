@@ -24,6 +24,10 @@ env:
   UV_VERSION: "0.6.14"
 
 jobs:
+  ##########################################################################
+  # Lint
+  ##########################################################################
+
   lint:
     name: Ruff Lint
     runs-on: ubuntu-latest
@@ -41,7 +45,10 @@ jobs:
         run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Install Dependencies
-        run: uv sync --frozen
+        run: uv sync
+
+      - name: Install Project
+        run: uv pip install -e .
 
       - name: Ruff Check
         run: |
@@ -50,6 +57,10 @@ jobs:
       - name: Ruff Format Check
         run: |
           uv run ruff format . --check
+
+  ##########################################################################
+  # Tests
+  ##########################################################################
 
   test:
     name: Pytest
@@ -74,6 +85,8 @@ jobs:
 
       DEBUG: "false"
 
+      PYTHONPATH: ${{ github.workspace }}
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -87,17 +100,35 @@ jobs:
         run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Install Dependencies
-        run: uv sync --frozen
+        run: uv sync
 
-      - name: Run Tests
+      - name: Install Project
+        run: uv pip install -e .
+
+      - name: Create Required Directories
         run: |
           mkdir -p data
           mkdir -p chroma_db
-          uv run pytest tests -v --tb=short
+          mkdir -p uploads
 
-      - name: Upload Test Report
+      - name: Run Tests
+        run: |
+          uv run pytest tests \
+            -v \
+            --tb=short
+
+      - name: Upload Pytest Cache
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-report
+          name: pytest-cache
           path: .pytest_cache
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            .pytest_cache
+            data

@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "agentflow-chat"
 version = "0.1.0"
@@ -33,9 +37,8 @@ dev = [
     "ruff>=0.12.0",
 ]
 
-# ------------------------------------------------------------------
-# Ruff Configuration
-# ------------------------------------------------------------------
+[tool.setuptools.packages.find]
+include = ["app*"]
 
 [tool.ruff]
 line-length = 100
@@ -53,11 +56,9 @@ exclude = [
 ]
 
 [tool.ruff.lint]
-
-# Enable all rules
 select = ["ALL"]
 
-# Temporarily ignore everything
+# Temporarily disable linting
 ignore = ["ALL"]
 
 [tool.ruff.format]
