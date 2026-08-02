@@ -14,19 +14,18 @@ permissions:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
 
-  BACKEND_IMAGE: agentflow-backend
-  FRONTEND_IMAGE: agentflow-frontend
+  BACKEND_IMAGE: ${{ secrets.ECR_BACKEND_REPOSITORY }}
+  FRONTEND_IMAGE: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
 
 jobs:
   deploy:
-    name: Build and Deploy
+    name: Build & Deploy
     runs-on: ubuntu-latest
 
     steps:
       ##########################################################################
-      # Checkout
+      # Checkout Repository
       ##########################################################################
 
       - name: Checkout Repository
@@ -52,6 +51,19 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       ##########################################################################
+      # Verify Configuration
+      ##########################################################################
+
+      - name: Verify Environment
+        run: |
+          echo "Registry  : ${{ steps.login-ecr.outputs.registry }}"
+          echo "Backend   : ${BACKEND_IMAGE}"
+          echo "Frontend  : ${FRONTEND_IMAGE}"
+
+          test -n "${BACKEND_IMAGE}"
+          test -n "${FRONTEND_IMAGE}"
+
+      ##########################################################################
       # Build Backend Image
       ##########################################################################
 
@@ -59,7 +71,7 @@ jobs:
         run: |
           docker build \
             -f docker/Dockerfile.backend \
-            -t $ECR_REGISTRY/$BACKEND_IMAGE:latest \
+            -t ${{ steps.login-ecr.outputs.registry }}/${BACKEND_IMAGE}:latest \
             .
 
       ##########################################################################
@@ -70,49 +82,49 @@ jobs:
         run: |
           docker build \
             -f docker/Dockerfile.frontend \
-            -t $ECR_REGISTRY/$FRONTEND_IMAGE:latest \
+            -t ${{ steps.login-ecr.outputs.registry }}/${FRONTEND_IMAGE}:latest \
             .
 
       ##########################################################################
-      # Push Backend
+      # Push Backend Image
       ##########################################################################
 
       - name: Push Backend Image
         run: |
           docker push \
-          $ECR_REGISTRY/$BACKEND_IMAGE:latest
+            ${{ steps.login-ecr.outputs.registry }}/${BACKEND_IMAGE}:latest
 
       ##########################################################################
-      # Push Frontend
+      # Push Frontend Image
       ##########################################################################
 
       - name: Push Frontend Image
         run: |
           docker push \
-          $ECR_REGISTRY/$FRONTEND_IMAGE:latest
+            ${{ steps.login-ecr.outputs.registry }}/${FRONTEND_IMAGE}:latest
 
       ##########################################################################
       # Deploy to EC2
       ##########################################################################
 
-      - name: Deploy on EC2
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-
           script: |
             aws ecr get-login-password \
-            --region ${{ secrets.AWS_REGION }} | \
+              --region ${{ secrets.AWS_REGION }} | \
             docker login \
-            --username AWS \
-            --password-stdin ${{ secrets.ECR_REGISTRY }}
+              --username AWS \
+              --password-stdin \
+              ${{ steps.login-ecr.outputs.registry }}
 
             cd ~/agentflow
 
             docker compose pull
 
-            docker compose up -d
+            docker compose up -d --remove-orphans
 
-            docker image prune -f
+            docker image prune -af
