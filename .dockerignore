@@ -1,0 +1,55 @@
+# Python artefacts
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Test artefacts
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+test-results.xml
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docker-specific (avoid recursive context)
+docker/.env*
+
+# Local secrets — NEVER bake into images
+.env
+.env.*
+!.env.example
+
+# Development-only files
+Makefile
+README.md
+detail.md
+docs/
+
+# Runtime data — mounted via named volumes at runtime
+data/
+uploads/
+
+# CI artefacts
+*.sarif
+
+
+.detail.md

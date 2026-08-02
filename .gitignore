@@ -1,0 +1,40 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+
+# Local database and checkpoint stores
+data/*.sqlite
+data/*.db
+data/chroma_db/
+*.db
+*.sqlite
+*.pkl
+user_memory.json
+
+# Local configurations
+.env
+.env.local
+.env.*.local
+.vscode/
+
+# macOS files
+.DS_Store
+
+# Logs and temporary files
+*.log
+*.tmp
+uploads/*
+!uploads/.gitkeep
+
+
+.detail.md
+detail.md
+
