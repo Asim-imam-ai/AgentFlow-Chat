@@ -3,8 +3,7 @@ import os
 
 
 class CSVLoader:
-    """
-    Simple loader for CSV files.
+    """Simple loader for CSV files.
     Formats each row into a text description.
     """
 
@@ -16,7 +15,7 @@ class CSVLoader:
             raise FileNotFoundError(f"File not found: {self.file_path}")
 
         lines = []
-        with open(self.file_path, "r", encoding="utf-8", errors="ignore") as f:
+        with open(self.file_path, encoding="utf-8", errors="ignore") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 row_str = ", ".join([f"{k}: {v}" for k, v in row.items() if v])

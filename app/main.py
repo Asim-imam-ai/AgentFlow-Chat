@@ -1,5 +1,4 @@
-"""
-AgentFlow FastAPI Application Factory.
+"""AgentFlow FastAPI Application Factory.
 
 This module creates and configures the FastAPI application.
 It exposes ONLY the REST API — no HTML templates, no static files.
@@ -16,8 +15,7 @@ from exceptions import register_exception_handlers
 
 
 def create_app() -> FastAPI:
-    """
-    FastAPI Application Factory.
+    """FastAPI Application Factory.
 
     Returns a configured FastAPI application that exposes:
       - REST API endpoints under /api/*
@@ -74,8 +72,7 @@ def create_app() -> FastAPI:
     # ── Root Status (JSON only — NO HTML) ─────────────────────────────────────
     @app.get("/", include_in_schema=False, tags=["Status"])
     async def root():
-        """
-        API health/info endpoint.
+        """API health/info endpoint.
         Returns JSON — never HTML. The frontend is Streamlit (separate service).
         """
         return {

@@ -24,7 +24,7 @@ try:
         columns = [c["name"] for c in inspector.get_columns("conversations")]
         if "message_count" not in columns or "conversation_id" not in columns:
             logger.info(
-                "Database schema is outdated (missing 'message_count' or 'conversation_id'). Dropping and recreating tables..."
+                "Database schema is outdated (missing 'message_count' or 'conversation_id'). Dropping and recreating tables...",
             )
             Base.metadata.drop_all(bind=engine)
 

@@ -16,8 +16,7 @@ class UploadService:
         file: UploadFile,
         conversation_id: str | None = None,
     ) -> dict:
-        """
-        Save the uploaded file to disk and trigger RAG ingestion.
+        """Save the uploaded file to disk and trigger RAG ingestion.
 
         Args:
             file:             The FastAPI UploadFile object.
@@ -25,6 +24,7 @@ class UploadService:
 
         Returns:
             Stats dict: {filename, size_bytes, text_length, chunks, embeddings, conversation_id}
+
         """
         if not os.path.exists(settings.UPLOAD_DIR):
             os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
@@ -41,7 +41,7 @@ class UploadService:
             size_bytes = os.path.getsize(file_path)
             logger.info(
                 f"[UPLOAD SERVICE] Saved '{safe_name}' ({size_bytes} bytes). "
-                f"Triggering RAG ingestion for conversation_id='{conversation_id}'…"
+                f"Triggering RAG ingestion for conversation_id='{conversation_id}'…",
             )
 
             # ── 2. Ingest into vector store ───────────────────────────────
@@ -57,7 +57,7 @@ class UploadService:
                 f"text_length={stats['text_length']}  "
                 f"chunks={stats['chunks']}  "
                 f"embeddings={stats['embeddings']}  "
-                f"conversation_id='{conversation_id}'"
+                f"conversation_id='{conversation_id}'",
             )
             return stats
 

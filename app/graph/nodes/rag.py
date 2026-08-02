@@ -9,8 +9,7 @@ _RAG_CHUNK_LIMIT = 4
 
 
 def rag_node(state: AgentState) -> dict:
-    """
-    RAG pre-retrieval node.
+    """RAG pre-retrieval node.
 
     Runs *before* the chatbot node and injects relevant document context into
     ``state['rag_context']``.  Retrieval is scoped to the active conversation
@@ -42,8 +41,7 @@ def rag_node(state: AgentState) -> dict:
         return {"rag_context": ""}
 
     logger.info(
-        f"[RAG NODE] Retrieving for query='{query[:80]}…'  "
-        f"conversation_id='{conversation_id}'"
+        f"[RAG NODE] Retrieving for query='{query[:80]}…'  conversation_id='{conversation_id}'",
     )
 
     chunks = rag_service_wrapper.search_documents(
@@ -55,7 +53,7 @@ def rag_node(state: AgentState) -> dict:
     if not chunks:
         logger.warning(
             f"[RAG NODE] No document chunks retrieved for conversation_id='{conversation_id}'. "
-            "The chatbot will answer without document context."
+            "The chatbot will answer without document context.",
         )
         return {"rag_context": ""}
 
@@ -69,7 +67,7 @@ def rag_node(state: AgentState) -> dict:
 
     logger.info(
         f"[RAG NODE] Injecting {len(chunks)} chunk(s) as rag_context. "
-        f"doc_ids={[c['doc_id'] for c in chunks]}"
+        f"doc_ids={[c['doc_id'] for c in chunks]}",
     )
 
     return {"rag_context": rag_context}

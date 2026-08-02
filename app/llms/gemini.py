@@ -8,15 +8,13 @@ logger = logging.getLogger("agentflow.llms.gemini")
 
 
 def get_gemini_llm(model_name: str | None = None, temperature: float | None = None):
-    """
-    Get a configured ChatGoogleGenerativeAI model instance.
-    """
+    """Get a configured ChatGoogleGenerativeAI model instance."""
     selected_model = model_name or settings.GEMINI_MODEL
     selected_temp = temperature if temperature is not None else settings.TEMPERATURE
 
     if not settings.GEMINI_API_KEY:
         logger.warning(
-            "⚠️ GEMINI_API_KEY not found in settings. Make sure it is set in environment."
+            "⚠️ GEMINI_API_KEY not found in settings. Make sure it is set in environment.",
         )
 
     logger.info(f"Creating Gemini LLM instance using model {selected_model}")

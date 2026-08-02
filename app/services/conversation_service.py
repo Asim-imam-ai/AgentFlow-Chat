@@ -20,7 +20,9 @@ class ConversationService:
         temperature: float | None = None,
     ):
         return self.repo.create(
-            conversation_id, provider=provider, temperature=temperature
+            conversation_id,
+            provider=provider,
+            temperature=temperature,
         )
 
     def create_or_update_summary(self, conversation_id: str, summary: str, **kwargs):

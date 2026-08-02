@@ -1,5 +1,4 @@
-"""
-RAG pipeline integration tests.
+"""RAG pipeline integration tests.
 
 These tests cover the full ingestion → retrieval pipeline including:
 - Text extraction and chunking (unit)
@@ -65,8 +64,7 @@ def requires_gemini(fn):
 
 @requires_gemini
 def test_ingest_and_retrieve_scoped_by_conversation(tmp_path):
-    """
-    Documents uploaded for conversation A must NOT appear in conversation B results,
+    """Documents uploaded for conversation A must NOT appear in conversation B results,
     and documents uploaded for conversation B must NOT appear in conversation A results.
     """
     from langchain_core.vectorstores import InMemoryVectorStore
@@ -123,17 +121,18 @@ def test_ingest_and_retrieve_scoped_by_conversation(tmp_path):
 
         # Retrieve for conv-aaa — should find LangGraph content
         results_a = retriever.retrieve(
-            "LangGraph multi-agent", conversation_id="conv-aaa"
+            "LangGraph multi-agent",
+            conversation_id="conv-aaa",
         )
         assert len(results_a) >= 1
-        assert any(
-            "LangGraph" in r["content"] or "AgentFlow" in r["content"]
-            for r in results_a
-        ), f"Expected AgentFlow content in conv-aaa results: {results_a}"
+        assert any("LangGraph" in r["content"] or "AgentFlow" in r["content"] for r in results_a), (
+            f"Expected AgentFlow content in conv-aaa results: {results_a}"
+        )
 
         # Retrieve for conv-bbb — should find quantum content
         results_b = retriever.retrieve(
-            "quantum entanglement", conversation_id="conv-bbb"
+            "quantum entanglement",
+            conversation_id="conv-bbb",
         )
         assert len(results_b) >= 1
         assert any("quantum" in r["content"].lower() for r in results_b), (
@@ -165,7 +164,8 @@ def test_retrieval_returns_empty_for_unknown_conversation():
 
     retriever = DocumentRetriever(k=4)
     results = retriever.retrieve(
-        "anything at all", conversation_id="non-existent-conv-xyz-999"
+        "anything at all",
+        conversation_id="non-existent-conv-xyz-999",
     )
     assert results == [], f"Expected empty list, got: {results}"
 

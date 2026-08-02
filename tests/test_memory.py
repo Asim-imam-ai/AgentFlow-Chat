@@ -7,7 +7,7 @@ def test_memory_tool_runs():
     """Test memory tool gets/sets values."""
     # Ensure tool runs and returns correct output format
     res = memory_tool.invoke(
-        {"action": "set", "key": "test_pref", "value": "Python developer"}
+        {"action": "set", "key": "test_pref", "value": "Python developer"},
     )
     assert "saved memory" in res or "Error" in res
 

@@ -9,9 +9,7 @@ logger = logging.getLogger("agentflow.frontend.state")
 
 
 def init_session_state() -> None:
-    """
-    Initialize all Streamlit session state variables if they do not exist.
-    """
+    """Initialize all Streamlit session state variables if they do not exist."""
     if "current_thread" not in st.session_state:
         st.session_state.current_thread = None
     if "messages" not in st.session_state:
@@ -35,9 +33,7 @@ def init_session_state() -> None:
 
 
 def load_conversations(force_refresh: bool = False) -> list[dict[str, Any]]:
-    """
-    Load the conversation list from the backend (or session state cache if available).
-    """
+    """Load the conversation list from the backend (or session state cache if available)."""
     if st.session_state.conversation_list is None or force_refresh:
         try:
             conversations = AgentFlowAPI.get_conversations()
@@ -49,9 +45,7 @@ def load_conversations(force_refresh: bool = False) -> list[dict[str, Any]]:
 
 
 def set_active_conversation(conversation_id: str) -> None:
-    """
-    Selects a conversation, loads its history (using cache or API), and sets the active session.
-    """
+    """Selects a conversation, loads its history (using cache or API), and sets the active session."""
     st.session_state.current_thread = conversation_id
     st.session_state.selected_conversation = conversation_id
     st.session_state.uploaded_files = []  # Reset files for the new thread
@@ -88,9 +82,7 @@ def set_active_conversation(conversation_id: str) -> None:
 
 
 def create_new_session() -> str:
-    """
-    Creates a new conversation thread, initializes its state, and updates the cache instantly.
-    """
+    """Creates a new conversation thread, initializes its state, and updates the cache instantly."""
     try:
         new_id = AgentFlowAPI.create_thread()
         if new_id:
@@ -115,17 +107,14 @@ def create_new_session() -> str:
                 st.session_state.conversation_list.insert(0, new_conv)
 
             return new_id
-        else:
-            raise RuntimeError("Backend did not return thread_id.")
+        raise RuntimeError("Backend did not return thread_id.")
     except Exception as e:
         logger.error(f"Could not generate a new thread: {e}")
         raise RuntimeError(f"Could not generate a new thread: {e}")
 
 
 def delete_session(conversation_id: str) -> None:
-    """
-    Deletes a conversation session, removes it from cache, and resets active state if deleted.
-    """
+    """Deletes a conversation session, removes it from cache, and resets active state if deleted."""
     try:
         AgentFlowAPI.delete_thread(conversation_id)
 
@@ -154,9 +143,7 @@ def delete_session(conversation_id: str) -> None:
 
 
 def rename_session(conversation_id: str, summary: str) -> None:
-    """
-    Renames a conversation thread, updating both the backend and local state caches.
-    """
+    """Renames a conversation thread, updating both the backend and local state caches."""
     try:
         AgentFlowAPI.rename_thread(conversation_id, summary)
 

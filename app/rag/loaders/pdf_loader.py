@@ -5,9 +5,7 @@ logger = logging.getLogger("agentflow.rag.loaders.pdf_loader")
 
 
 class PDFLoader:
-    """
-    Loader for PDF files. Uses pypdf if available, otherwise falls back to a placeholder.
-    """
+    """Loader for PDF files. Uses pypdf if available, otherwise falls back to a placeholder."""
 
     def __init__(self, file_path: str):
         self.file_path = file_path
@@ -29,7 +27,7 @@ class PDFLoader:
             return "\n\n".join(text_parts)
         except ImportError:
             logger.warning(
-                "pypdf is not installed. To parse PDFs, install it with 'pip install pypdf'. Falling back to metadata readout."
+                "pypdf is not installed. To parse PDFs, install it with 'pip install pypdf'. Falling back to metadata readout.",
             )
             # Basic fallback: read raw bytes or return placeholder
             basename = os.path.basename(self.file_path)

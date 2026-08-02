@@ -12,8 +12,7 @@ logger = logging.getLogger("agentflow.graph.nodes.summarizer")
 
 
 def summarizer_node(state: AgentState) -> dict:
-    """
-    Summarizes the conversation history if it gets too long,
+    """Summarizes the conversation history if it gets too long,
     storing the summary in the state and removing older messages.
     """
     messages = state.get("messages", [])
@@ -23,7 +22,7 @@ def summarizer_node(state: AgentState) -> dict:
         return {}
 
     logger.info(
-        f"Conversation length ({len(messages)}) exceeds limit. Generating summary..."
+        f"Conversation length ({len(messages)}) exceeds limit. Generating summary...",
     )
 
     # 1. Prepare messages for summary
@@ -46,11 +45,14 @@ def summarizer_node(state: AgentState) -> dict:
         llm = get_gemini_llm()
     else:
         llm = ChatOpenAI(
-            model=settings.OPENAI_MODEL, temperature=0, api_key=settings.OPENAI_API_KEY
+            model=settings.OPENAI_MODEL,
+            temperature=0,
+            api_key=settings.OPENAI_API_KEY,
         )
 
     prompt = SUMMARIZER_PROMPT.format(
-        existing_summary=existing_summary, new_messages=new_messages_str
+        existing_summary=existing_summary,
+        new_messages=new_messages_str,
     )
 
     response = llm.invoke(prompt)
@@ -60,8 +62,6 @@ def summarizer_node(state: AgentState) -> dict:
 
     # 3. Create RemoveMessage objects for messages we are summarizing
     # This deletes them from the LangGraph state
-    delete_messages = [
-        RemoveMessage(id=msg.id) for msg in messages_to_summarize if msg.id
-    ]
+    delete_messages = [RemoveMessage(id=msg.id) for msg in messages_to_summarize if msg.id]
 
     return {"summary": summary_text, "messages": delete_messages}

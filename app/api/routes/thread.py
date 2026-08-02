@@ -14,9 +14,7 @@ router = APIRouter(tags=["Thread Management"])
 
 @router.post("/thread/new", response_model=GenericResponse)
 async def create_new_thread(db: Session = Depends(get_db)):
-    """
-    Generate a new unique thread/session identifier for conversation mapping and save it in SQLite.
-    """
+    """Generate a new unique thread/session identifier for conversation mapping and save it in SQLite."""
     new_id = str(uuid.uuid4())
     logger.info(f"Generated new thread ID: {new_id}")
 
@@ -38,9 +36,7 @@ async def create_new_thread(db: Session = Depends(get_db)):
 
 @router.post("/thread/{thread_id}/clear", response_model=GenericResponse)
 async def clear_thread(thread_id: str, db: Session = Depends(get_db)):
-    """
-    Clear/delete all conversation data for a thread from the database.
-    """
+    """Clear/delete all conversation data for a thread from the database."""
     try:
         service = ConversationService(db)
         success = service.delete_conversation(thread_id)
@@ -68,9 +64,7 @@ async def clear_thread(thread_id: str, db: Session = Depends(get_db)):
 
 @router.post("/thread/{thread_id}/rename", response_model=GenericResponse)
 async def rename_thread(thread_id: str, summary: str, db: Session = Depends(get_db)):
-    """
-    Rename a conversation thread summary.
-    """
+    """Rename a conversation thread summary."""
     try:
         service = ConversationService(db)
         conv = service.create_or_update_summary(thread_id, summary)

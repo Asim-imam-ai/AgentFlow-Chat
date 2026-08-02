@@ -9,9 +9,7 @@ _compiled_graph = None
 
 
 def get_graph():
-    """
-    Get the compiled agent graph singleton.
-    """
+    """Get the compiled agent graph singleton."""
     global _compiled_graph
     if _compiled_graph is None:
         _compiled_graph = build_agent_graph()
@@ -19,7 +17,5 @@ def get_graph():
 
 
 def create_graph():
-    """
-    Create a new instance of the compiled agent graph.
-    """
+    """Create a new instance of the compiled agent graph."""
     return build_agent_graph()

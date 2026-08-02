@@ -20,8 +20,7 @@ class IngestionManager:
         file_path: str,
         conversation_id: str | None = None,
     ) -> dict:
-        """
-        Load, split and embed a single document into the vector store.
+        """Load, split and embed a single document into the vector store.
 
         Args:
             file_path:        Absolute path to the saved file.
@@ -30,6 +29,7 @@ class IngestionManager:
 
         Returns:
             A summary dict with ingestion statistics (for logging/auditing).
+
         """
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File not found: {file_path}")
@@ -38,8 +38,7 @@ class IngestionManager:
         ext = os.path.splitext(basename)[1].lower()
 
         logger.info(
-            f"[RAG INGESTION] File: '{basename}'  "
-            f"ext='{ext}'  conversation_id='{conversation_id}'"
+            f"[RAG INGESTION] File: '{basename}'  ext='{ext}'  conversation_id='{conversation_id}'",
         )
 
         # ── 1. Select loader ──────────────────────────────────────────────
@@ -53,7 +52,7 @@ class IngestionManager:
             loader = PDFLoader(file_path)
         else:
             logger.warning(
-                f"Unsupported extension '{ext}' — falling back to plain-text loader."
+                f"Unsupported extension '{ext}' — falling back to plain-text loader.",
             )
             loader = TextLoader(file_path)
 
@@ -75,7 +74,7 @@ class IngestionManager:
             }
 
         logger.info(
-            f"[RAG INGESTION] Extracted {text_length} characters from '{basename}'."
+            f"[RAG INGESTION] Extracted {text_length} characters from '{basename}'.",
         )
 
         # ── 3. Split into chunks ──────────────────────────────────────────
@@ -98,7 +97,7 @@ class IngestionManager:
         persistent_vector_store.add_texts(texts=chunks, metadatas=metadatas)
         logger.info(
             f"[RAG INGESTION] Indexed {len(chunks)} embeddings for '{basename}' "
-            f"(conversation_id='{conversation_id}')."
+            f"(conversation_id='{conversation_id}').",
         )
 
         return {

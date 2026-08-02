@@ -24,8 +24,7 @@ class AgentService:
         model_name: str | None = None,
         temperature: float | None = None,
     ) -> dict:
-        """
-        Execute one full conversation turn.
+        """Execute one full conversation turn.
         Invokes the LangGraph compiled state graph, saves history and updates SQL DB.
         """
         active_id = conversation_id or str(uuid.uuid4())
@@ -74,13 +73,15 @@ class AgentService:
             kwargs["temperature"] = temperature
 
         self.conversation_service.create_or_update_summary(
-            active_id, summary or "", **kwargs
+            active_id,
+            summary or "",
+            **kwargs,
         )
 
         return {
             "response": assistant_resp,
             "conversation_id": active_id,
-            "summary": summary if summary else None,
+            "summary": summary or None,
         }
 
 

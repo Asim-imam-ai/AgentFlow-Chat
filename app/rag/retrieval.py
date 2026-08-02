@@ -15,8 +15,7 @@ class DocumentRetriever:
         query: str,
         conversation_id: str | None = None,
     ) -> list[dict[str, Any]]:
-        """
-        Search the vectorstore and return structured match documents.
+        """Search the vectorstore and return structured match documents.
 
         Args:
             query:            The user question / search string.
@@ -25,10 +24,11 @@ class DocumentRetriever:
 
         Returns:
             List of dicts with 'content', 'metadata', and 'doc_id' keys.
+
         """
         logger.info(
             f"[RAG RETRIEVAL] query='{query[:80]}…'  "
-            f"conversation_id='{conversation_id}'  k={self.k}"
+            f"conversation_id='{conversation_id}'  k={self.k}",
         )
 
         docs = persistent_vector_store.similarity_search(
@@ -41,7 +41,7 @@ class DocumentRetriever:
             logger.warning(
                 f"[RAG RETRIEVAL] Zero documents retrieved for conversation_id='{conversation_id}'. "
                 "This means either no documents have been uploaded for this conversation yet, "
-                "or the conversation_id was not stored in metadata during ingestion."
+                "or the conversation_id was not stored in metadata during ingestion.",
             )
             return []
 
@@ -53,12 +53,12 @@ class DocumentRetriever:
                     "content": doc.page_content,
                     "metadata": doc.metadata,
                     "doc_id": doc_id,
-                }
+                },
             )
 
         logger.info(
             f"[RAG RETRIEVAL] Retrieved {len(results)} chunk(s). "
-            f"doc_ids={[r['doc_id'] for r in results]}"
+            f"doc_ids={[r['doc_id'] for r in results]}",
         )
         return results
 

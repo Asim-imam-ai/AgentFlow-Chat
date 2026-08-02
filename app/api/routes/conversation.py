@@ -13,9 +13,7 @@ router = APIRouter(tags=["Conversations"])
 
 @router.get("/conversations", response_model=ConversationListResponse)
 async def list_conversations(db: Session = Depends(get_db)):
-    """
-    List all active conversation sessions/threads and their current metadata.
-    """
+    """List all active conversation sessions/threads and their current metadata."""
     try:
         service = ConversationService(db)
         conversations = service.list_all_conversations()
@@ -27,7 +25,7 @@ async def list_conversations(db: Session = Depends(get_db)):
                     conversation_id=conv.conversation_id,
                     message_count=conv.message_count,
                     summary=conv.summary,
-                )
+                ),
             )
         return ConversationListResponse(conversations=formatted)
     except Exception as e:

@@ -14,8 +14,7 @@ async def upload_document(
     file: UploadFile = File(...),
     conversation_id: str | None = Form(None),
 ):
-    """
-    Upload a document and immediately index it into the RAG vector store.
+    """Upload a document and immediately index it into the RAG vector store.
 
     The ``conversation_id`` form field scopes the document to a specific
     conversation thread so that retrieval only returns chunks relevant to
@@ -26,7 +25,7 @@ async def upload_document(
     logger.info(
         f"[UPLOAD] filename='{file.filename}'  "
         f"content_type='{file.content_type}'  "
-        f"conversation_id='{conversation_id}'"
+        f"conversation_id='{conversation_id}'",
     )
 
     stats = await upload_service.process_upload(

@@ -7,8 +7,7 @@ from frontend.utils import show_error
 
 
 def render_uploader() -> None:
-    """
-    Renders the document uploader within the chat area.
+    """Renders the document uploader within the chat area.
     Presents a button/popover for file selection, shows upload progress,
     and updates the active thread's attachments.
     """
@@ -44,7 +43,7 @@ def render_uploader() -> None:
                         st.session_state.uploaded_files.append(uploaded_file.name)
                         chunks = res.get("chunks", "?")
                         st.toast(
-                            f"✅ Indexed {uploaded_file.name} ({chunks} chunks) into this conversation!"
+                            f"✅ Indexed {uploaded_file.name} ({chunks} chunks) into this conversation!",
                         )
 
                     time.sleep(0.5)
@@ -55,8 +54,7 @@ def render_uploader() -> None:
 
 
 def render_attachment_chips() -> None:
-    """
-    Displays attachment chips representing files staged to be sent or indexed.
+    """Displays attachment chips representing files staged to be sent or indexed.
     Allows users to remove attachments before sending messages.
     """
     if st.session_state.uploaded_files:

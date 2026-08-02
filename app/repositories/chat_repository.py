@@ -10,7 +10,10 @@ class ChatRepository:
         self.db = db
 
     def add_message(
-        self, conversation_id: str, role: str, content: str
+        self,
+        conversation_id: str,
+        role: str,
+        content: str,
     ) -> MessageModel:
         # Ensure conversation exists
         conv = (
@@ -57,6 +60,6 @@ class ChatRepository:
 
     def clear_history(self, conversation_id: str) -> None:
         self.db.query(MessageModel).filter(
-            MessageModel.conversation_id == conversation_id
+            MessageModel.conversation_id == conversation_id,
         ).delete()
         self.db.commit()

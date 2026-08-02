@@ -12,8 +12,7 @@ VECTORSTORE_PATH = os.path.join("data", "vectorstore.pkl")
 
 
 class PersistentVectorStore:
-    """
-    Wrapper for InMemoryVectorStore with local pickle-based file persistence.
+    """Wrapper for InMemoryVectorStore with local pickle-based file persistence.
     Supports per-conversation metadata filtering so that retrieval only returns
     chunks that were indexed for the active conversation thread.
     """
@@ -38,7 +37,7 @@ class PersistentVectorStore:
                 return
             except Exception as e:
                 logger.error(
-                    f"Failed to load vectorstore from disk ({e}). Creating a fresh store."
+                    f"Failed to load vectorstore from disk ({e}). Creating a fresh store.",
                 )
                 # Remove corrupt file so it is not loaded again next restart
                 try:
@@ -88,8 +87,7 @@ class PersistentVectorStore:
         k: int = 4,
         conversation_id: str | None = None,
     ) -> list[Document]:
-        """
-        Search for chunks similar to *query*.
+        """Search for chunks similar to *query*.
 
         If *conversation_id* is provided the results are **filtered** so that
         only chunks whose metadata ``conversation_id`` matches are returned.
@@ -102,19 +100,17 @@ class PersistentVectorStore:
         if conversation_id:
             candidates = self.vectorstore.similarity_search(query, k=k * 10)
             filtered = [
-                doc
-                for doc in candidates
-                if doc.metadata.get("conversation_id") == conversation_id
+                doc for doc in candidates if doc.metadata.get("conversation_id") == conversation_id
             ]
             logger.info(
                 f"Similarity search for conv '{conversation_id}': "
-                f"{len(candidates)} candidates → {len(filtered)} after filter, returning top {k}."
+                f"{len(candidates)} candidates → {len(filtered)} after filter, returning top {k}.",
             )
             return filtered[:k]
 
         results = self.vectorstore.similarity_search(query, k=k)
         logger.info(
-            f"Similarity search (no conv filter): returned {len(results)} results."
+            f"Similarity search (no conv filter): returned {len(results)} results.",
         )
         return results
 
@@ -125,11 +121,7 @@ class PersistentVectorStore:
         except Exception:
             return 0
         if conversation_id:
-            return sum(
-                1
-                for d in all_docs
-                if d.metadata.get("conversation_id") == conversation_id
-            )
+            return sum(1 for d in all_docs if d.metadata.get("conversation_id") == conversation_id)
         return len(all_docs)
 
 

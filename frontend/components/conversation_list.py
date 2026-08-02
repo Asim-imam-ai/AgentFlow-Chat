@@ -10,8 +10,7 @@ from frontend.utils import show_error
 
 
 def render_conversation_list() -> None:
-    """
-    Renders the scrollable conversation list in the sidebar.
+    """Renders the scrollable conversation list in the sidebar.
     Supports selecting, renaming, and deleting conversations.
     """
     st.markdown("### Conversations")
@@ -44,7 +43,9 @@ def render_conversation_list() -> None:
                 col_save, col_cancel = st.columns(2)
                 with col_save:
                     if st.button(
-                        "💾 Save", key=f"save_{conv_id}", use_container_width=True
+                        "💾 Save",
+                        key=f"save_{conv_id}",
+                        use_container_width=True,
                     ):
                         try:
                             rename_session(conv_id, new_name)
@@ -54,7 +55,9 @@ def render_conversation_list() -> None:
                             show_error(f"Failed to rename: {e}")
                 with col_cancel:
                     if st.button(
-                        "❌", key=f"cancel_{conv_id}", use_container_width=True
+                        "❌",
+                        key=f"cancel_{conv_id}",
+                        use_container_width=True,
                     ):
                         st.session_state.editing_thread_id = None
                         st.rerun()

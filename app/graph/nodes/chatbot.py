@@ -13,8 +13,7 @@ logger = logging.getLogger("agentflow.graph.nodes.chatbot")
 
 
 def chatbot_node(state: AgentState) -> dict:
-    """
-    Chatbot node that interacts with the LLM.
+    """Chatbot node that interacts with the LLM.
 
     Consumes:
       - state['rag_context']    — document snippets retrieved by the RAG node
@@ -27,9 +26,7 @@ def chatbot_node(state: AgentState) -> dict:
     provider = state.get("provider") or settings.DEFAULT_LLM_PROVIDER
     model_name = state.get("model_name")
     temp = (
-        state.get("temperature")
-        if state.get("temperature") is not None
-        else settings.TEMPERATURE
+        state.get("temperature") if state.get("temperature") is not None else settings.TEMPERATURE
     )
 
     # 2. Get LLM instance
@@ -39,7 +36,9 @@ def chatbot_node(state: AgentState) -> dict:
     else:
         model_name = model_name or settings.OPENAI_MODEL
         llm = ChatOpenAI(
-            model=model_name, temperature=temp, api_key=settings.OPENAI_API_KEY
+            model=model_name,
+            temperature=temp,
+            api_key=settings.OPENAI_API_KEY,
         )
 
     # 3. Bind tools
@@ -59,11 +58,11 @@ def chatbot_node(state: AgentState) -> dict:
 
     if rag_ctx:
         logger.info(
-            f"[CHATBOT NODE] Injecting RAG context ({len(rag_ctx)} chars) into system prompt."
+            f"[CHATBOT NODE] Injecting RAG context ({len(rag_ctx)} chars) into system prompt.",
         )
     else:
         logger.info(
-            "[CHATBOT NODE] No RAG context available — answering from model knowledge."
+            "[CHATBOT NODE] No RAG context available — answering from model knowledge.",
         )
 
     system_message = SystemMessage(content=system_prompt)

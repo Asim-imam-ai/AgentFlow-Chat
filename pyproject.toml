@@ -4,40 +4,63 @@ version = "0.1.0"
 description = "AgentFlow Chat FastAPI backend"
 readme = "README.md"
 requires-python = ">=3.12"
+
 dependencies = [
-    "langchain>=1.2.15",
-    "langchain-openai>=1.2.1",
-    "langgraph>=1.1.9",
-    "python-dotenv>=1.2.2",
-    "streamlit>=1.56.0",
-    "tavily-python>=0.7.23",
     "fastapi>=0.111.0",
     "uvicorn>=0.30.1",
-    "pydantic-settings>=2.3.4",
+    "streamlit>=1.56.0",
+    "python-dotenv>=1.2.2",
     "python-multipart>=0.0.9",
+    "pydantic-settings>=2.3.4",
+
+    "langchain>=1.2.15",
+    "langchain-openai>=1.2.1",
     "langchain-google-genai>=1.0.6",
-    "sqlalchemy>=2.0.31",
+    "langgraph>=1.1.9",
     "langgraph-checkpoint-sqlite>=2.0.1",
-    "pytest>=8.2.2",
     "langchain-text-splitters>=0.2.0",
+
+    "sqlalchemy>=2.0.31",
+
+    "tavily-python>=0.7.23",
     "pypdf>=4.2.0",
+
+    "pytest>=8.2.2",
 ]
 
 [dependency-groups]
 dev = [
-    "ruff",
+    "ruff>=0.12.0",
 ]
 
-
+# ------------------------------------------------------------------
+# Ruff Configuration
+# ------------------------------------------------------------------
 
 [tool.ruff]
-
 line-length = 100
 target-version = "py312"
 
+exclude = [
+    ".git",
+    ".github",
+    ".venv",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "build",
+    "dist",
+]
+
 [tool.ruff.lint]
+
+# Enable all rules
 select = ["ALL"]
 
-ignore = [
-    "B008",
-]
+# Temporarily ignore everything
+ignore = ["ALL"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

@@ -22,7 +22,7 @@ def test_should_continue_logic():
     # State with tool calls should route to tools node
     ai_msg_with_tool = AIMessage(content="")
     ai_msg_with_tool.tool_calls = [
-        {"name": "web_search", "args": {"query": "test"}, "id": "call-1"}
+        {"name": "web_search", "args": {"query": "test"}, "id": "call-1"},
     ]
 
     state_with_tools: AgentState = {

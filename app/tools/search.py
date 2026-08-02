@@ -11,9 +11,7 @@ logger = logging.getLogger("agentflow.tools.search")
 
 @tool("web_search")
 def search_tool(query: str) -> str:
-    """
-    Search the web for up-to-date information, news, fact-checking, or details on any topic.
-    """
+    """Search the web for up-to-date information, news, fact-checking, or details on any topic."""
     if not settings.TAVILY_API_KEY:
         return "Error: Tavily Web Search API key is not configured. Please set TAVILY_API_KEY."
 
@@ -32,7 +30,7 @@ def search_tool(query: str) -> str:
             url = r.get("url", "No URL")
             content = r.get("content", "No Content")
             formatted_results.append(
-                f"Title: {title}\nURL: {url}\nContent: {content}\n"
+                f"Title: {title}\nURL: {url}\nContent: {content}\n",
             )
 
         return "\n---\n".join(formatted_results)

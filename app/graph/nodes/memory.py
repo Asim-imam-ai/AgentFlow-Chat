@@ -7,9 +7,7 @@ logger = logging.getLogger("agentflow.graph.nodes.memory")
 
 
 def memory_node(state: AgentState) -> dict:
-    """
-    Node that loads persistent user memory facts and saves them to the agent state.
-    """
+    """Node that loads persistent user memory facts and saves them to the agent state."""
     logger.info("Executing memory node: loading facts from storage")
     memory = load_memory()
 

@@ -13,7 +13,7 @@ MEMORY_FILE = "user_memory.json"
 def load_memory() -> dict:
     if os.path.exists(MEMORY_FILE):
         try:
-            with open(MEMORY_FILE, "r") as f:
+            with open(MEMORY_FILE) as f:
                 return json.load(f)
         except Exception as e:
             logger.error(f"Error loading memory: {e}")
@@ -30,8 +30,7 @@ def save_memory(data: dict) -> None:
 
 @tool("memory")
 def memory_tool(action: str, key: str, value: str | None = None) -> str:
-    """
-    Store or retrieve user profile facts and preferences to remember between sessions.
+    """Store or retrieve user profile facts and preferences to remember between sessions.
 
     Args:
         action (str): Must be either 'get', 'set', or 'delete'.
@@ -40,6 +39,7 @@ def memory_tool(action: str, key: str, value: str | None = None) -> str:
 
     Returns:
         str: Response text indicating result of operation.
+
     """
     memory = load_memory()
 
@@ -49,22 +49,21 @@ def memory_tool(action: str, key: str, value: str | None = None) -> str:
             return f"Memory for '{key}': {val}"
         return f"No memory found for key '{key}'"
 
-    elif action == "set":
+    if action == "set":
         if not value:
             return "Error: Action 'set' requires a value."
         memory[key] = value
         save_memory(memory)
         return f"Successfully saved memory: '{key}' = '{value}'"
 
-    elif action == "delete":
+    if action == "delete":
         if key in memory:
             del memory[key]
             save_memory(memory)
             return f"Successfully deleted memory for key '{key}'"
         return f"Key '{key}' not found in memory"
 
-    else:
-        return f"Error: Action '{action}' is invalid. Supported actions are 'get', 'set', and 'delete'."
+    return f"Error: Action '{action}' is invalid. Supported actions are 'get', 'set', and 'delete'."
 
 
 # Register tool

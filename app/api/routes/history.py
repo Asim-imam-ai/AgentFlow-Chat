@@ -14,9 +14,7 @@ router = APIRouter(tags=["History"])
 
 @router.get("/history/{conversation_id}", response_model=HistoryResponse)
 async def get_conversation_history(conversation_id: str, db: Session = Depends(get_db)):
-    """
-    Get the complete message history and summary for a conversation/thread session.
-    """
+    """Get the complete message history and summary for a conversation/thread session."""
     try:
         conversation_service = ConversationService(db)
         chat_service = ChatService(db)
@@ -34,7 +32,7 @@ async def get_conversation_history(conversation_id: str, db: Session = Depends(g
         formatted_messages = []
         for msg in messages:
             formatted_messages.append(
-                MessageDetail(role=msg.role, content=msg.content, id=str(msg.id))
+                MessageDetail(role=msg.role, content=msg.content, id=str(msg.id)),
             )
 
         return HistoryResponse(

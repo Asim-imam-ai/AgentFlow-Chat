@@ -8,8 +8,7 @@ from app.tools.registry import tool_registry
 
 @tool("calculator")
 def calculator_tool(expression: str) -> str:
-    """
-    Useful to compute mathematical expressions.
+    """Useful to compute mathematical expressions.
     Input should be a mathematical expression, e.g., '2 + 2' or 'sqrt(16) * 5'.
     Only supports arithmetic operations and standard math functions (sin, cos, tan, log, sqrt, etc.).
     """

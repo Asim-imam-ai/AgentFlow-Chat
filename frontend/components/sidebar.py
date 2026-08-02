@@ -7,8 +7,7 @@ from frontend.utils import show_error
 
 
 def render_sidebar() -> None:
-    """
-    Renders the sidebar layout consisting of the logo, New Conversation button,
+    """Renders the sidebar layout consisting of the logo, New Conversation button,
     conversation list, and settings selectors.
     """
     with st.sidebar:

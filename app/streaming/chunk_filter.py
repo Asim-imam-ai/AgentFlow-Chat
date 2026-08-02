@@ -2,14 +2,12 @@ from typing import Any
 
 
 class ChunkFilter:
-    """
-    Utility to filter and format streaming updates from LangGraph.
+    """Utility to filter and format streaming updates from LangGraph.
     Only yields content updates from specific nodes (e.g., chatbot replies).
     """
 
     def filter_update(self, update: dict[str, Any]) -> dict[str, Any] | None:
-        """
-        Parses update events from graph nodes.
+        """Parses update events from graph nodes.
         Returns clean token/text content if chatbot is generating text.
         """
         # Updates are in format: {node_name: {state_keys: values}}

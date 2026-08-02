@@ -14,9 +14,7 @@ logger = logging.getLogger("agentflow.graph.builder")
 
 
 def should_continue(state: AgentState) -> str:
-    """
-    Conditional edge function that decides whether to execute tools or stop.
-    """
+    """Conditional edge function that decides whether to execute tools or stop."""
     messages = state.get("messages", [])
     if not messages:
         return END
@@ -26,7 +24,7 @@ def should_continue(state: AgentState) -> str:
     # If the LLM made tool calls, run the tools node
     if hasattr(last_message, "tool_calls") and last_message.tool_calls:
         logger.info(
-            f"Tool calls detected: {[tc['name'] for tc in last_message.tool_calls]}. Routing to tools."
+            f"Tool calls detected: {[tc['name'] for tc in last_message.tool_calls]}. Routing to tools.",
         )
         return "tools"
 
@@ -35,9 +33,7 @@ def should_continue(state: AgentState) -> str:
 
 
 def build_agent_graph():
-    """
-    Builds and compiles the LangGraph agent state graph.
-    """
+    """Builds and compiles the LangGraph agent state graph."""
     logger.info("Building StateGraph...")
 
     # 1. Initialize StateGraph
@@ -58,7 +54,9 @@ def build_agent_graph():
 
     # Add conditional router from chatbot
     workflow.add_conditional_edges(
-        "chatbot", should_continue, {"tools": "tools", END: END}
+        "chatbot",
+        should_continue,
+        {"tools": "tools", END: END},
     )
 
     # Route back to chatbot after running tools

@@ -2,8 +2,7 @@ import streamlit as st
 
 
 def render_settings() -> None:
-    """
-    Renders Model Provider selectbox and Temperature slider settings.
+    """Renders Model Provider selectbox and Temperature slider settings.
     Uses st.session_state keys directly to avoid warnings.
     """
     st.markdown("### Settings")

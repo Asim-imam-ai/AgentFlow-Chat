@@ -13,8 +13,7 @@ router = APIRouter(tags=["Chat"])
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat_with_agent(request: ChatRequest, db: Session = Depends(get_db)):
-    """
-    Send a message to the AgentFlow agent.
+    """Send a message to the AgentFlow agent.
     If a conversation_id is provided, continues the existing chat session.
     Otherwise, starts a new thread.
     """

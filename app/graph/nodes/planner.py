@@ -11,9 +11,7 @@ logger = logging.getLogger("agentflow.graph.nodes.planner")
 
 
 def planner_node(state: AgentState) -> dict:
-    """
-    Optional planner node. Creates a plan of execution for complex tasks.
-    """
+    """Optional planner node. Creates a plan of execution for complex tasks."""
     logger.info("Executing planner node")
 
     # Simple check: only plan if there are no planner steps
@@ -35,7 +33,9 @@ def planner_node(state: AgentState) -> dict:
         llm = get_gemini_llm()
     else:
         llm = ChatOpenAI(
-            model=settings.OPENAI_MODEL, temperature=0, api_key=settings.OPENAI_API_KEY
+            model=settings.OPENAI_MODEL,
+            temperature=0,
+            api_key=settings.OPENAI_API_KEY,
         )
 
     prompt = PLANNER_SYSTEM_PROMPT.format(user_input=user_input)

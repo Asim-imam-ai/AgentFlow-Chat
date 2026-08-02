@@ -20,7 +20,8 @@ def register_exception_handlers(app: FastAPI):
     @app.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception):
         logger.error(
-            f"Unhandled Exception on {request.url.path}: {exc!s}", exc_info=True
+            f"Unhandled Exception on {request.url.path}: {exc!s}",
+            exc_info=True,
         )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

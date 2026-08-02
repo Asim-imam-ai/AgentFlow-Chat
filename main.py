@@ -17,8 +17,7 @@
 #     main()
 
 
-"""
-Local development entry point.
+"""Local development entry point.
 
 Usage:
     python main.py
@@ -39,11 +38,9 @@ import uvicorn
 
 
 def configure_environment() -> None:
-    """
-    Ensure the project's virtual environment site-packages
+    """Ensure the project's virtual environment site-packages
     are available when running locally.
     """
-
     project_root = Path(__file__).resolve().parent
 
     # Windows virtual environment
@@ -65,10 +62,7 @@ def configure_environment() -> None:
 
 
 def main() -> None:
-    """
-    Start the FastAPI application.
-    """
-
+    """Start the FastAPI application."""
     configure_environment()
 
     print("=" * 60)

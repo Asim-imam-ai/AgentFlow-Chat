@@ -26,7 +26,7 @@ render_sidebar()
 health = AgentFlowAPI.get_health()
 if health.get("status") == "unhealthy":
     st.error(
-        "🚨 AgentFlow Backend server is unreachable! Please start the FastAPI backend service."
+        "🚨 AgentFlow Backend server is unreachable! Please start the FastAPI backend service.",
     )
 
 # 5. Render main application chat window

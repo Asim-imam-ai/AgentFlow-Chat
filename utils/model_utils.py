@@ -4,8 +4,7 @@ logger = logging.getLogger("agentflow.utils.model_utils")
 
 
 def estimate_token_count(text: str) -> int:
-    """
-    Rough estimation of token count for text.
+    """Rough estimation of token count for text.
     In production, use tiktoken or model specific tokenizers.
     """
     if not text:
@@ -17,11 +16,11 @@ def estimate_token_count(text: str) -> int:
 
 
 def get_pricing_estimate(
-    tokens: int, model_name: str, direction: str = "input"
+    tokens: int,
+    model_name: str,
+    direction: str = "input",
 ) -> float:
-    """
-    Return rough USD pricing for model usage.
-    """
+    """Return rough USD pricing for model usage."""
     model_lower = model_name.lower()
     # Simple lookup rates per 1M tokens
     pricing_rates = {

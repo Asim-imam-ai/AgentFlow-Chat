@@ -47,7 +47,7 @@ class AgentFlowAPI:
             return res.json()
         except Exception as e:
             raise RuntimeError(
-                f"Failed to load history for conversation {conversation_id}: {e}"
+                f"Failed to load history for conversation {conversation_id}: {e}",
             )
 
     @staticmethod

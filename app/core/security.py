@@ -15,12 +15,14 @@ async def get_api_key(api_key: str = Security(api_key_header)):
 
     if not api_key:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="API Key missing"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="API Key missing",
         )
 
     # We can validate against settings.SECRET_KEY or standard client tokens
     if api_key != settings.SECRET_KEY:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid API Key"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid API Key",
         )
     return api_key

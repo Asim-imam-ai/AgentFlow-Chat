@@ -14,7 +14,8 @@ def validate_uuid(val: str) -> bool:
 
 
 def validate_model_provider(
-    provider: str, allowed_providers: list[str] = ["openai", "gemini"]
+    provider: str,
+    allowed_providers: list[str] = ["openai", "gemini"],
 ) -> bool:
     """Check if model provider is allowed."""
     return provider.lower() in allowed_providers

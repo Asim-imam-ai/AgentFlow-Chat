@@ -17,11 +17,7 @@ class ConversationRepository:
         )
 
     def get_all(self) -> list[ConversationModel]:
-        return (
-            self.db.query(ConversationModel)
-            .order_by(ConversationModel.updated_at.desc())
-            .all()
-        )
+        return self.db.query(ConversationModel).order_by(ConversationModel.updated_at.desc()).all()
 
     def create(
         self,
@@ -46,7 +42,10 @@ class ConversationRepository:
         return conv
 
     def create_or_update(
-        self, conversation_id: str, summary: str | None = None, **kwargs
+        self,
+        conversation_id: str,
+        summary: str | None = None,
+        **kwargs,
     ) -> ConversationModel:
         conv = self.get_by_id(conversation_id)
         if not conv:
@@ -58,9 +57,8 @@ class ConversationRepository:
                 updated_at=datetime.datetime.utcnow(),
             )
             self.db.add(conv)
-        else:
-            if summary is not None:
-                conv.summary = summary
+        elif summary is not None:
+            conv.summary = summary
 
         for k, v in kwargs.items():
             if hasattr(conv, k):

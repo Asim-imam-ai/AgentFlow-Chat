@@ -17,9 +17,7 @@ class StreamService:
         provider: str = None,
         model_name: str = None,
     ) -> AsyncGenerator[str, None]:
-        """
-        Stream agent events token-by-token or state-by-state.
-        """
+        """Stream agent events token-by-token or state-by-state."""
         graph = get_graph()
         config = {"configurable": {"thread_id": conversation_id}}
 

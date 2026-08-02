@@ -17,7 +17,8 @@ def test_database_persistence():
 
         # Test creation
         conv = repo.create_or_update(
-            conversation_id="test-session", summary="First summary"
+            conversation_id="test-session",
+            summary="First summary",
         )
         assert conv.id == "test-session"
         assert conv.summary == "First summary"

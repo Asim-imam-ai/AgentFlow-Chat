@@ -14,7 +14,9 @@ class ConversationModel(Base):
     message_count = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(
-        DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
+        DateTime,
+        default=datetime.datetime.utcnow,
+        onupdate=datetime.datetime.utcnow,
     )
     last_message = Column(Text, nullable=True)
     provider = Column(String, nullable=True)
@@ -25,7 +27,9 @@ class ConversationModel(Base):
     id = synonym("conversation_id")
 
     messages = relationship(
-        "MessageModel", back_populates="conversation", cascade="all, delete-orphan"
+        "MessageModel",
+        back_populates="conversation",
+        cascade="all, delete-orphan",
     )
 
 
@@ -52,5 +56,7 @@ class MemoryModel(Base):
     key = Column(String, unique=True, index=True, nullable=False)
     value = Column(Text, nullable=False)
     updated_at = Column(
-        DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
+        DateTime,
+        default=datetime.datetime.utcnow,
+        onupdate=datetime.datetime.utcnow,
     )

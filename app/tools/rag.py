@@ -11,21 +11,16 @@ logger = logging.getLogger("agentflow.tools.rag")
 
 @tool("document_retriever")
 def rag_tool(query: str) -> str:
-    """
-    Search and retrieve context from uploaded documents.
+    """Search and retrieve context from uploaded documents.
     Use this when the user asks questions about their uploaded files or documents.
     """
     upload_dir = settings.UPLOAD_DIR
     if not os.path.exists(upload_dir):
         return f"Document directory '{upload_dir}' does not exist. No documents have been uploaded yet."
 
-    files = [
-        f for f in os.listdir(upload_dir) if os.path.isfile(os.path.join(upload_dir, f))
-    ]
+    files = [f for f in os.listdir(upload_dir) if os.path.isfile(os.path.join(upload_dir, f))]
     if not files:
-        return (
-            "No documents found in the upload directory. Please upload documents first."
-        )
+        return "No documents found in the upload directory. Please upload documents first."
 
     query_terms = query.lower().split()
     results = []
@@ -36,7 +31,7 @@ def rag_tool(query: str) -> str:
         # In production, we'd use PDF/Docx loaders + Vector DB.
         if filename.endswith(".txt") or filename.endswith(".md"):
             try:
-                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                with open(file_path, encoding="utf-8", errors="ignore") as f:
                     content = f.read()
 
                 paragraphs = content.split("\n\n")

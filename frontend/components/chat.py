@@ -9,9 +9,7 @@ from frontend.utils import show_error
 
 
 def simulate_streaming(text: str) -> None:
-    """
-    Simulate a word-by-word streaming typing effect for assistant responses.
-    """
+    """Simulate a word-by-word streaming typing effect for assistant responses."""
     message_placeholder = st.empty()
     full_response = ""
     for chunk in text.split(" "):
@@ -22,8 +20,7 @@ def simulate_streaming(text: str) -> None:
 
 
 def render_chat() -> None:
-    """
-    Renders the central chat area, displaying conversation history,
+    """Renders the central chat area, displaying conversation history,
     thinking status indicator, removable attachment chips, and the chat input box.
     """
     active_id = st.session_state.current_thread
@@ -102,14 +99,12 @@ def render_chat() -> None:
 
             # 4. Save response to state
             st.session_state.messages.append(
-                {"role": "assistant", "content": response_text}
+                {"role": "assistant", "content": response_text},
             )
 
             # Update history cache
             if conv_id in st.session_state.history_cache:
-                st.session_state.history_cache[conv_id]["messages"] = (
-                    st.session_state.messages
-                )
+                st.session_state.history_cache[conv_id]["messages"] = st.session_state.messages
                 if data.get("summary"):
                     st.session_state.history_cache[conv_id]["summary"] = data["summary"]
 

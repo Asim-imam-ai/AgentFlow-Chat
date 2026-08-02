@@ -9,8 +9,7 @@ _checkpointer = None
 
 
 def get_checkpointer() -> SqliteSaver:
-    """
-    Returns a persistent, global SQLite checkpointer instance.
+    """Returns a persistent, global SQLite checkpointer instance.
     This avoids context manager connection closing bugs by keeping the connection
     open for the lifetime of the application.
     """
@@ -33,9 +32,7 @@ def get_checkpointer() -> SqliteSaver:
 
 
 def close_checkpointer_connection() -> None:
-    """
-    Cleanly close the database connection on application shutdown.
-    """
+    """Cleanly close the database connection on application shutdown."""
     global _conn, _checkpointer
     if _conn is not None:
         try:
