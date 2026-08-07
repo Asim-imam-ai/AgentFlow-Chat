@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v4
 
       ####################################################################
-      # Python
+      # Setup Python
       ####################################################################
 
       - name: Install uv
@@ -52,7 +52,7 @@ jobs:
         run: uv sync --frozen
 
       ####################################################################
-      # Tests
+      # Run Tests
       ####################################################################
 
       - name: Run Tests
@@ -62,7 +62,7 @@ jobs:
           uv run pytest tests -v --tb=short
 
       ####################################################################
-      # Configure AWS
+      # Configure AWS Credentials
       ####################################################################
 
       - name: Configure AWS Credentials
@@ -73,7 +73,14 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       ####################################################################
-      # Login ECR
+      # Verify AWS Identity
+      ####################################################################
+
+      - name: Verify AWS Identity
+        run: aws sts get-caller-identity
+
+      ####################################################################
+      # Login to Amazon ECR
       ####################################################################
 
       - name: Login to Amazon ECR
@@ -81,24 +88,30 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       ####################################################################
-      # Verify Secrets
+      # Verify Repository Secrets
       ####################################################################
 
-      - name: Verify ECR Repository Secrets
+      - name: Verify Repository Secrets
         run: |
           set -e
 
-          if [ -z "${BACKEND_REPOSITORY}" ]; then
-            echo "Missing ECR_BACKEND_REPOSITORY secret"
-            exit 1
-          fi
+          [ -n "$BACKEND_REPOSITORY" ] || { echo "ECR_BACKEND_REPOSITORY is missing"; exit 1; }
+          [ -n "$FRONTEND_REPOSITORY" ] || { echo "ECR_FRONTEND_REPOSITORY is missing"; exit 1; }
 
-          if [ -z "${FRONTEND_REPOSITORY}" ]; then
-            echo "Missing ECR_FRONTEND_REPOSITORY secret"
-            exit 1
-          fi
+          echo "Backend Repository: $BACKEND_REPOSITORY"
+          echo "Frontend Repository: $FRONTEND_REPOSITORY"
 
-          echo "Secrets verified."
+      ####################################################################
+      # Verify ECR Repositories
+      ####################################################################
+
+      - name: Verify ECR Repositories
+        run: |
+          aws ecr describe-repositories \
+            --repository-names "$(basename "$BACKEND_REPOSITORY")"
+
+          aws ecr describe-repositories \
+            --repository-names "$(basename "$FRONTEND_REPOSITORY")"
 
       ####################################################################
       # Build Backend
@@ -108,7 +121,7 @@ jobs:
         run: |
           docker build \
             -f docker/Dockerfile.backend \
-            -t ${BACKEND_REPOSITORY}:latest .
+            -t "$BACKEND_REPOSITORY:latest" .
 
       ####################################################################
       # Build Frontend
@@ -118,7 +131,14 @@ jobs:
         run: |
           docker build \
             -f docker/Dockerfile.frontend \
-            -t ${FRONTEND_REPOSITORY}:latest .
+            -t "$FRONTEND_REPOSITORY:latest" .
+
+      ####################################################################
+      # Show Docker Images
+      ####################################################################
+
+      - name: Show Docker Images
+        run: docker images
 
       ####################################################################
       # Push Backend
@@ -126,7 +146,7 @@ jobs:
 
       - name: Push Backend Image
         run: |
-          docker push ${BACKEND_REPOSITORY}:latest
+          docker push "$BACKEND_REPOSITORY:latest"
 
       ####################################################################
       # Push Frontend
@@ -134,10 +154,10 @@ jobs:
 
       - name: Push Frontend Image
         run: |
-          docker push ${FRONTEND_REPOSITORY}:latest
+          docker push "$FRONTEND_REPOSITORY:latest"
 
       ####################################################################
-      # SSH Key
+      # Configure SSH
       ####################################################################
 
       - name: Configure SSH
@@ -148,15 +168,18 @@ jobs:
 
           chmod 600 ~/.ssh/id_rsa
 
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
       ####################################################################
-      # Deploy
+      # Deploy to EC2
       ####################################################################
 
       - name: Deploy to EC2
         run: |
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
+          ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
+
+          set -e
 
           cd ~/AgentFlow-Chat
 
