@@ -5,180 +5,165 @@ on:
     branches:
       - main
 
-concurrency:
-  group: cd-${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
   contents: read
 
 env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
-
-  BACKEND_IMAGE: ${{ secrets.ECR_BACKEND_REPOSITORY }}
-  FRONTEND_IMAGE: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
+  PYTHON_VERSION: "3.12"
+  UV_VERSION: "0.6.14"
 
 jobs:
   deploy:
     name: Build & Deploy
     runs-on: ubuntu-latest
 
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+
+      DATABASE_URL: sqlite:///./data/chatbot_memory.db
+      CHROMA_DB_PATH: ./data/chroma_db
+
+      BACKEND_REPOSITORY: ${{ secrets.ECR_BACKEND_REPOSITORY }}
+      FRONTEND_REPOSITORY: ${{ secrets.ECR_FRONTEND_REPOSITORY }}
+
     steps:
-      ##########################################################################
-      # Checkout Repository
-      ##########################################################################
+      ####################################################################
+      # Checkout
+      ####################################################################
 
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      ##########################################################################
-      # Configure AWS Credentials
-      ##########################################################################
+      ####################################################################
+      # Python
+      ####################################################################
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: ${{ env.UV_VERSION }}
+
+      - name: Install Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install Dependencies
+        run: uv sync --frozen
+
+      ####################################################################
+      # Tests
+      ####################################################################
+
+      - name: Run Tests
+        run: |
+          mkdir -p data
+          mkdir -p data/chroma_db
+          uv run pytest tests -v --tb=short
+
+      ####################################################################
+      # Configure AWS
+      ####################################################################
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      ##########################################################################
-      # Login to Amazon ECR
-      ##########################################################################
+      ####################################################################
+      # Login ECR
+      ####################################################################
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      ##########################################################################
-      # Verify Configuration
-      ##########################################################################
+      ####################################################################
+      # Verify Secrets
+      ####################################################################
 
-      - name: Verify Environment
+      - name: Verify ECR Repository Secrets
         run: |
-          echo "Registry  : ${{ steps.login-ecr.outputs.registry }}"
-          echo "Backend   : ${BACKEND_IMAGE}"
-          echo "Frontend  : ${FRONTEND_IMAGE}"
+          set -e
 
-          test -n "${BACKEND_IMAGE}"
-          test -n "${FRONTEND_IMAGE}"
+          if [ -z "${BACKEND_REPOSITORY}" ]; then
+            echo "Missing ECR_BACKEND_REPOSITORY secret"
+            exit 1
+          fi
 
-      ##########################################################################
-      # Build Backend Image
-      ##########################################################################
+          if [ -z "${FRONTEND_REPOSITORY}" ]; then
+            echo "Missing ECR_FRONTEND_REPOSITORY secret"
+            exit 1
+          fi
 
-      - name: Build Backend Docker Image
+          echo "Secrets verified."
+
+      ####################################################################
+      # Build Backend
+      ####################################################################
+
+      - name: Build Backend Image
         run: |
           docker build \
             -f docker/Dockerfile.backend \
-            -t ${{ steps.login-ecr.outputs.registry }}/${BACKEND_IMAGE}:latest \
-            .
+            -t ${BACKEND_REPOSITORY}:latest .
 
-      ##########################################################################
-      # Build Frontend Image
-      ##########################################################################
+      ####################################################################
+      # Build Frontend
+      ####################################################################
 
-      - name: Build Frontend Docker Image
+      - name: Build Frontend Image
         run: |
           docker build \
             -f docker/Dockerfile.frontend \
-            -t ${{ steps.login-ecr.outputs.registry }}/${FRONTEND_IMAGE}:latest \
-            .
+            -t ${FRONTEND_REPOSITORY}:latest .
 
-      ##########################################################################
-      # Push Backend Image
-      ##########################################################################
+      ####################################################################
+      # Push Backend
+      ####################################################################
 
       - name: Push Backend Image
         run: |
-          docker push \
-            ${{ steps.login-ecr.outputs.registry }}/${BACKEND_IMAGE}:latest
+          docker push ${BACKEND_REPOSITORY}:latest
 
-      ##########################################################################
-      # Push Frontend Image
-      ##########################################################################
+      ####################################################################
+      # Push Frontend
+      ####################################################################
 
       - name: Push Frontend Image
         run: |
-          docker push \
-            ${{ steps.login-ecr.outputs.registry }}/${FRONTEND_IMAGE}:latest
+          docker push ${FRONTEND_REPOSITORY}:latest
 
-      ##########################################################################
-      # SSH Connectivity Pre-check (diagnostics)
-      ##########################################################################
+      ####################################################################
+      # SSH Key
+      ####################################################################
 
-      - name: Verify SSH connectivity to EC2
-        if: always()
+      - name: Configure SSH
         run: |
-          echo "Writing SSH key to /tmp/deploy_key"
-          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
+          mkdir -p ~/.ssh
 
-          echo "Testing TCP connectivity to ${EC2_HOST}:22 (timeout 10s)"
-          # quick SSH connectivity test; will fail fast with clear message
-          ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i /tmp/deploy_key "${EC2_USERNAME}@${EC2_HOST}" 'echo SSH_OK' || (
-            echo "";
-            echo "ERROR: SSH connection failed. Check the following:";
-            echo " - secrets.EC2_HOST is correct and has a public IP/DNS";
-            echo " - secrets.EC2_SSH_KEY contains the private key PEM with exact newlines";
-            echo " - secrets.EC2_USERNAME is correct (ec2-user / ubuntu / centos / admin)";
-            echo " - The instance security group allows inbound TCP/22 from GitHub Actions runners";
-            echo " - The instance is running and reachable from the internet (or use SSM if it's in a private subnet)";
-            exit 1
-          )
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
 
-      ##########################################################################
-      # Deploy to EC2 (via SSH)
-      ##########################################################################
+          chmod 600 ~/.ssh/id_rsa
+
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      ####################################################################
+      # Deploy
+      ####################################################################
 
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          timeout: 30
-          script: |
-            set -e
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << EOF
 
-            cd ~/agentflow
+          cd ~/AgentFlow-Chat
 
-            docker compose pull
+          docker compose pull
 
-            docker compose up -d --remove-orphans
+          docker compose up -d
 
-            docker image prune -af
+          docker image prune -af
 
-      ##########################################################################
-      # Alternative: Deploy via AWS SSM (uncomment and use if preferred)
-      # This avoids exposing SSH to the public internet. Requires the instance
-      # to have the SSM agent and an instance profile with AmazonSSMManagedInstanceCore.
-      ##########################################################################
-
-      # - name: Deploy via SSM
-      #   if: false
-      #   run: |
-      #     INSTANCE_ID=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=agentflow" "Name=instance-state-name,Values=running" --query "Reservations[0].Instances[0].InstanceId" --output text)
-      #     if [ -z "$INSTANCE_ID" ] || [ "$INSTANCE_ID" == "None" ]; then
-      #       echo "Instance not found"; exit 1
-      #     fi
-      #     aws ssm send-command \
-      #       --instance-ids "$INSTANCE_ID" \
-      #       --document-name "AWS-RunShellScript" \
-      #       --comment "Deploy from GitHub Actions" \
-      #       --parameters commands='[
-      #         "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${STEP_REGISTRY}",
-      #         "cd ~/agentflow || exit 1",
-      #         "docker compose pull",
-      #         "docker compose up -d --remove-orphans",
-      #         "docker image prune -af"
-      #       ]' \
-      #       --timeout-seconds 600 \
-      #       --query "Command.CommandId" --output text > /tmp/ssm_cmd_id
-      #     COMMAND_ID=$(cat /tmp/ssm_cmd_id)
-      #     aws ssm list-command-invocations --command-id "$COMMAND_ID" --details --query "CommandInvocations[0].Status" --output text
+          EOF
