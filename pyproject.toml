@@ -38,7 +38,8 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["app*"]
+where = ["."]
+
 
 [tool.ruff]
 line-length = 100
