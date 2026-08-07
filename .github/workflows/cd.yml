@@ -57,12 +57,11 @@ jobs:
 
       - name: Run Tests
         run: |
-          mkdir -p data
           mkdir -p data/chroma_db
           uv run pytest tests -v --tb=short
 
       ####################################################################
-      # Configure AWS Credentials
+      # Configure AWS
       ####################################################################
 
       - name: Configure AWS Credentials
@@ -73,14 +72,14 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       ####################################################################
-      # Verify AWS Identity
+      # Verify AWS
       ####################################################################
 
       - name: Verify AWS Identity
         run: aws sts get-caller-identity
 
       ####################################################################
-      # Login to Amazon ECR
+      # Login Amazon ECR
       ####################################################################
 
       - name: Login to Amazon ECR
@@ -88,18 +87,28 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       ####################################################################
-      # Verify Repository Secrets
+      # Validate Secrets
       ####################################################################
 
-      - name: Verify Repository Secrets
+      - name: Validate Repository Secrets
+        shell: bash
         run: |
-          set -e
+          set -euo pipefail
 
-          [ -n "$BACKEND_REPOSITORY" ] || { echo "ECR_BACKEND_REPOSITORY is missing"; exit 1; }
-          [ -n "$FRONTEND_REPOSITORY" ] || { echo "ECR_FRONTEND_REPOSITORY is missing"; exit 1; }
+          for repo in "$BACKEND_REPOSITORY" "$FRONTEND_REPOSITORY"; do
+            if [ -z "$repo" ]; then
+              echo "Repository secret is empty."
+              exit 1
+            fi
 
-          echo "Backend Repository: $BACKEND_REPOSITORY"
-          echo "Frontend Repository: $FRONTEND_REPOSITORY"
+            if [[ "$repo" == *$'\n'* ]]; then
+              echo "Repository contains newline characters."
+              exit 1
+            fi
+          done
+
+          echo "Backend : $BACKEND_REPOSITORY"
+          echo "Frontend: $FRONTEND_REPOSITORY"
 
       ####################################################################
       # Verify ECR Repositories
@@ -114,30 +123,43 @@ jobs:
             --repository-names "$(basename "$FRONTEND_REPOSITORY")"
 
       ####################################################################
+      # Setup Docker Buildx
+      ####################################################################
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      ####################################################################
       # Build Backend
       ####################################################################
 
       - name: Build Backend Image
+        shell: bash
         run: |
+          set -euo pipefail
+
           docker build \
             -f docker/Dockerfile.backend \
-            -t "$BACKEND_REPOSITORY:latest" .
+            -t "${BACKEND_REPOSITORY}:latest" .
 
       ####################################################################
       # Build Frontend
       ####################################################################
 
       - name: Build Frontend Image
+        shell: bash
         run: |
+          set -euo pipefail
+
           docker build \
             -f docker/Dockerfile.frontend \
-            -t "$FRONTEND_REPOSITORY:latest" .
+            -t "${FRONTEND_REPOSITORY}:latest" .
 
       ####################################################################
-      # Show Docker Images
+      # Verify Images
       ####################################################################
 
-      - name: Show Docker Images
+      - name: Verify Docker Images
         run: docker images
 
       ####################################################################
@@ -145,23 +167,30 @@ jobs:
       ####################################################################
 
       - name: Push Backend Image
+        shell: bash
         run: |
-          docker push "$BACKEND_REPOSITORY:latest"
+          set -euo pipefail
+          docker push "${BACKEND_REPOSITORY}:latest"
 
       ####################################################################
       # Push Frontend
       ####################################################################
 
       - name: Push Frontend Image
+        shell: bash
         run: |
-          docker push "$FRONTEND_REPOSITORY:latest"
+          set -euo pipefail
+          docker push "${FRONTEND_REPOSITORY}:latest"
 
       ####################################################################
       # Configure SSH
       ####################################################################
 
       - name: Configure SSH
+        shell: bash
         run: |
+          set -euo pipefail
+
           mkdir -p ~/.ssh
 
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
@@ -175,18 +204,21 @@ jobs:
       ####################################################################
 
       - name: Deploy to EC2
+        shell: bash
         run: |
           ssh -o StrictHostKeyChecking=no \
-            ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
+          "${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}" << 'EOF'
 
-          set -e
+          set -euo pipefail
 
           cd ~/AgentFlow-Chat
 
           docker compose pull
 
-          docker compose up -d
+          docker compose up -d --remove-orphans
 
           docker image prune -af
+
+          docker ps
 
           EOF
